@@ -1,4 +1,5 @@
 export default class Shape extends Array {
+    static get [Symbol.species]() { return Array; }
     
     clone() {
         return new Shape(...this);
