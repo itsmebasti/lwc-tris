@@ -1,16 +1,12 @@
-div.canvas {
-  display: table;
+.row {
+  display: flex;
 }
 
-div.row {
-  display: table-row;
+.border {
+  flex: 1;
 }
 
-div.border {
-  display: table-cell;
-  height: 100%;
-}
-
-div.pixel {
+.pixel {
+  width: 100%;
   height: 100%;
 }
