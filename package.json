@@ -17,8 +17,5 @@
         "serve": "node scripts/server.js",
         "watch": "lwc-services watch",
         "watch:production": "lwc-services watch --mode=production"
-    },
-    "browser": {
-        "fs": false
     }
 }
