@@ -1,54 +1,69 @@
-export const SOUNDS = { ROW_CLEAR: 0, GAME_OVER: 1, ROTATE: 2 };
+import { AudioClip } from '../arcade/tetris/model/audioClip';
+
+const AUDIO_FILES_PATH = '/resources/audio/';
+const FILE_SUFFIX = '.wav';
 
 export default class AudioPlayer {
     
-    touchDownSound = new Audio("resources/audio/touch-down.wav");
-    gameOverSound = new Audio("resources/audio/game-over.wav");
-    rotateSound = new Audio("resources/audio/rotate.wav");
-    tetrisMusic = new Audio("resources/audio/tetris.wav");
+    audioFiles;
+    muted;
+    main;
     
-    soundFxClips = [this.touchDownSound, this.gameOverSound, this.rotateSound ]
-    musicClips = [this.tetrisMusic ]
-    
-    constructor() {
-        this.tetrisMusic.loop = true;
-        this.tetrisMusic.volume = 0.3;
-        this.touchDownSound.volume = 0.7;
+    constructor(main) {
+        this.audioFiles = {};
+        this.muted = false;
+        this.main = main;
+        let music = this.obtainAudioClip(main);
+        music.volume = 0.35;
+        music.loop = true;
     }
     
     playMusic() {
-        if (this.tetrisMusic.paused) {
-            this.tetrisMusic.play();
-        }
+        let music = this.obtainAudioClip(this.main);
+        music.play();
     }
     
     pauseMusic() {
-        if (!this.tetrisMusic.paused) {
-            this.tetrisMusic.pause();
-        }
+        let music = this.obtainAudioClip(this.main);
+        music.pause();
     }
     
     stopMusic() {
-        if (!this.tetrisMusic.paused) {
-            this.tetrisMusic.pause();
-        }
-        this.tetrisMusic.currentTime = 0;
-    }
-    
-    playSoundClip(sound) {
-        var audio = this.soundFxClips[sound];
-        audio.currentTime = 0;
-        audio.play();
-    }
-    
-    toggleAudio() {
-        this.soundFxClips.forEach(audio => audio.muted = !audio.muted);
-        this.musicClips.forEach(audio => audio.muted = !audio.muted);
+        let music = this.obtainAudioClip(this.main);
+        music.pause();
+        music.currentTime = 0;
     }
     
     increaseMusicSpeed() {
-        if (this.tetrisMusic.playbackRate < 1.5) {
-            this.tetrisMusic.playbackRate += 0.005;
+        let music = this.obtainAudioClip(this.main);
+        if(music.playbackRate < 1.5) {
+            music.playbackRate += 0.005;
         }
+    }
+    
+    playSoundClip(name) {
+        let clip = this.obtainAudioClip(name);
+        clip.currentTime = 0;
+        clip.play();
+    }
+    
+    obtainAudioClip(name) {
+        if(this.audioFiles[name] === undefined) {
+            const path = AUDIO_FILES_PATH + name + FILE_SUFFIX;
+            console.log(path);
+            this.audioFiles[name] = new AudioClip(path, 1.0);
+            this.audioFiles[name].muted = this.muted;
+        }
+        return this.audioFiles[name];
+    }
+    
+    toggleAudio() {
+        this.muted = !this.muted;
+        
+        let music = this.obtainAudioClip(this.main);
+        music.muted = this.muted;
+
+        let keys = Object.keys(this.audioFiles);
+        keys.forEach(key => this.audioFiles[key].muted = this.muted);
     }
 }

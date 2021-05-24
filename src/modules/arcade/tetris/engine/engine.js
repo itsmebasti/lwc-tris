@@ -1,6 +1,8 @@
 import { O, I, L, J, E, S, Z, Brick } from '../model/bricks';
-import { SOUNDS } from '../../../audioPlayer/audioPlayer';
+import AudioPlayer from '../../../audioPlayer/audioPlayer';
 const bricks = [O, I, L, J, E, S, Z];
+
+const audioPlayer = new AudioPlayer("tetris");
 
 export default class Engine {
     canvas;
@@ -14,7 +16,7 @@ export default class Engine {
     nextTick;
     state = 'new';
     
-    constructor(canvas, nextView, audioPlayer) {
+    constructor(canvas, nextView) {
         this.canvas = canvas;
         this.nextView = nextView;
         this.audioPlayer = audioPlayer;
@@ -49,13 +51,13 @@ export default class Engine {
     }
     
     stop() {
-        this.audioPlayer.pauseMusic();
+        this.audioPlayer.stopMusic();
         clearTimeout(this.nextTick);
         this.state = "paused";
     }
     
     rotate() {
-        this.audioPlayer.playSoundClip(SOUNDS.ROTATE)
+        this.audioPlayer.playSoundClip("rotate");
         if(this.state !== "running" || !this.current) return;
         const {x, y, brick: {shape}} = this.current;
         
@@ -113,7 +115,7 @@ export default class Engine {
             this.score = this.tetris * this.tetris * 100;
             
             if(tetris.length > 0) {
-                this.audioPlayer.playSoundClip(SOUNDS.ROW_CLEAR)
+                this.audioPlayer.playSoundClip("touchDown");
                 this.audioPlayer.increaseMusicSpeed()
                 this.animate(tetris)
                     .then(() => this.floodEmptyRows())
@@ -163,9 +165,9 @@ export default class Engine {
     
     gameOver() {
         delete this.current;
-        clearTimeout(this.nextTick);
         this.audioPlayer.stopMusic();
-        this.audioPlayer.playSoundClip(SOUNDS.GAME_OVER);
+        this.audioPlayer.playSoundClip("gameOver");
+        clearTimeout(this.nextTick);
         alert('Game Over');
         this.state = "game over";
     }
@@ -199,5 +201,9 @@ export default class Engine {
         this.next && this.nextView.draw(0, 0, this.next.shape);
         this.next = this.randomBrick();
         this.nextView.draw(0, 0, this.next.shape, this.next.color);
+    }
+    
+    toggleAudio() {
+        this.audioPlayer.toggleAudio();
     }
 }
