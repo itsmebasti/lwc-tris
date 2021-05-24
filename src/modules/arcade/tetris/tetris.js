@@ -1,12 +1,14 @@
 import { LightningElement, track } from 'lwc';
 import Engine from './engine/engine';
 import Canvas from '../../view/divCanvas/model/canvas';
+import AudioPlayer from '../../audioPlayer/audioPlayer';
 
 export default class Tetris extends LightningElement {
     // Note: the canvas (array) needs to be declared here, to fulfill all tracking requirements.
     @track canvas;
     @track nextView;
     engine;
+    audioPlayer;
     
     actions = {
         'ArrowRight': () => this.engine.move(1),
@@ -16,15 +18,15 @@ export default class Tetris extends LightningElement {
         ' ': () => this.engine.hardDrop(),
         'Escape': () => this.reset(),
         'Enter': () => this.engine.playPause(),
-        'm': () => this.engine.toggleAudio()
+        'm': () => this.audioPlayer.toggleAudio()
     };
     
     reset() {
         this.engine && this.engine.stop();
-        
         this.canvas = new Canvas(10, 20);
         this.nextView = new Canvas(4, 4);
-        this.engine = new Engine(this.canvas, this.nextView);
+        this.audioPlayer = new AudioPlayer();
+        this.engine = new Engine(this.canvas, this.nextView, this.audioPlayer);
     }
     
     execute = (evt) => {
