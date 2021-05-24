@@ -1,7 +1,8 @@
 export default class Canvas extends Array {
+    static get [Symbol.species]() { return Array; }
+    
     constructor(width, height, color) {
-        super();
-        array(height).forEach((y) => this.push(new Row(y, color, width)));
+        super(...array(height).map((y) => new Row(y, color, width)));
     }
     
     draw(x, y, shape, color) {
@@ -86,18 +87,17 @@ class Row extends Array {
     }
 }
 
-function newPixel(x, y, color) {
+function newPixel(x, y, initial) {
     return {
-        x, y, color,
+        x, y, initial,
         key: y + '_' + x,
-        default: color,
-        style: 'background-color: ' + color,
-        paint: function(color = this.default) {
+        paint: function(color = initial) {
             this.color = color;
-            this.style = 'background-color: ' + color;
+            this.style = color ? 'background-color: ' + color : undefined;
+            return this;
         },
-        get empty() { return this.color === this.default; }
-    };
+        get empty() { return this.color === this.initial; }
+    }.paint();
 }
 
 function array(n) {

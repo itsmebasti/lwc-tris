@@ -2,29 +2,24 @@ import { LightningElement, api } from "lwc";
 
 export default class DivCanvas extends LightningElement {
     @api canvas = [];
-    @api scale = 20;
+    @api scale;
     @api background;
-    _border;
+    @api border;
     
-    @api set border(value) {
-        this._border = 'border: ' + value;
+    get cellBorder() {
+        return 'border: ' + this.border;
     }
     
-    get border() {
-        return this._border;
+    get canvasStyle() {
+        return `
+        width: ${this.canvas.width * this.scale}px;
+        height: ${this.canvas.height * this.scale}px;
+        background: ${this.background}`;
     }
     
     dispatchClick({target: {dataset: {x, y}}}) {
         x = Number(x);
         y = Number(y);
         this.dispatchEvent(new CustomEvent('pixelclick', {detail: {x, y}}))
-    }
-    
-    get canvasStyle() {
-        return `width: ${this.scale * this.canvas.width}px; background: ${this.background}`;
-    }
-    
-    get rowHeight() {
-        return `height: ${this.scale}px`;
     }
 }
