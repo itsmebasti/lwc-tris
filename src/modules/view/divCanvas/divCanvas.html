@@ -3,9 +3,9 @@
         <div for:each={canvas} for:item="row" key={row.key} class="row" style={rowHeight}>
             <div for:each={row} for:item="pixel" key={pixel.key} class="border" style={border}>
                 <div class="pixel"
-                     style={pixel.style}
-                     data-x={pixel.x} data-y={pixel.y}
-                     onclick={dispatchClick}>
+                    style={pixel.style}
+                    data-x={pixel.x} data-y={pixel.y}
+                    onclick={dispatchClick}>
                 </div>
             </div>
         </div>
