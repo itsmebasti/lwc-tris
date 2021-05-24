@@ -21,6 +21,7 @@ export default class Tetris extends LightningElement {
     
     reset() {
         this.engine && this.engine.stop();
+        
         this.canvas = new Canvas(10, 20);
         this.nextView = new Canvas(4, 4);
         this.engine = new Engine(this.canvas, this.nextView);
