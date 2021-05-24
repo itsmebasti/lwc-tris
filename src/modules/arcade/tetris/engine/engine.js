@@ -1,33 +1,30 @@
-import { O, I, L, J, E, S, Z, Brick } from '../model/bricks';
+import Randomizer from './sevenBagRandomizer';
 import AudioPlayer from '../../../audioPlayer/audioPlayer';
-const bricks = [O, I, L, J, E, S, Z];
 
 const audioPlayer = new AudioPlayer("tetris");
 
 export default class Engine {
     canvas;
     nextView;
+    
+    randomizer;
     current;
+    next;
+    
     audioPlayer;
     
+    counters;
     tetris = 0;
-    score = 0;
     tick = 500;
     nextTick;
     state = 'new';
     
-    constructor(canvas, nextView) {
+    constructor(canvas, nextView, counters) {
         this.canvas = canvas;
         this.nextView = nextView;
+        this.randomizer = new Randomizer();
         this.audioPlayer = audioPlayer;
-    }
-    
-    get level() {
-        return (1 + this.tetris / 10) | 0;
-    }
-    
-    get speed() {
-        return Math.max(200, this.tick - this.level * 5);
+        this.counters = counters;
     }
     
     playPause() {
@@ -35,7 +32,7 @@ export default class Engine {
             case 'new':
                 this.audioPlayer.playMusic();
                 this.state = "running";
-                this.insert(this.randomBrick());
+                this.insertNext(this.randomizer.next());
                 break;
             case 'paused':
                 this.audioPlayer.playMusic();
@@ -59,7 +56,7 @@ export default class Engine {
     rotate() {
         this.audioPlayer.playSoundClip("rotate");
         if(this.state !== "running" || !this.current) return;
-        const {x, y, brick: {shape}} = this.current;
+        const {x, y, block: {shape}} = this.current;
         
         this.hide();
         if(this.canvas.valid(x, y, shape.rotated())) {
@@ -76,13 +73,13 @@ export default class Engine {
     
     hardDrop() {
         if(this.state !== "running" || !this.current) return;
-        this.current && this.move(0, this.canvas.height + 1);
+        this.move(0, this.canvas.height + 1);
     }
     
     move(xOffset, yOffset = 0) {
         if(this.state !== "running" || !this.current) return;
         
-        const {x, y, brick: {shape}} = this.current;
+        const {x, y, block: {shape}} = this.current;
         
         const newX = x+xOffset;
         const newY = y+yOffset;
@@ -91,14 +88,16 @@ export default class Engine {
         this.current.x = this.lastPossible(x, newX, (x) => this.canvas.valid(x, y, shape));
         this.current.y = this.lastPossible(y, newY, (y) => this.canvas.valid(x, y, shape));
         this.draw();
-    
+        
         if(yOffset) {
             clearTimeout(this.nextTick);
             if(this.current.y !== newY) {
                 delete this.current;
+    
+                this.counters.score += 100;
                 
                 this.clearTetris()
-                    .then(() => this.insert());
+                    .then(() => this.insertNext());
             }
             else {
                 this.nextTick = setTimeout(() => this.move(0, 1), this.speed);
@@ -106,17 +105,18 @@ export default class Engine {
         }
     }
     
-    
     clearTetris() {
         return new Promise((resolve) => {
             const tetris = this.canvas.filter((row) => row.full);
             
-            this.tetris -= tetris.length;
-            this.score = this.tetris * this.tetris * 100;
+            this.tetris += tetris.length;
+            this.counters.level = (1 + (this.tetris / 10)) | 0;
+            this.counters.score += tetris.length * tetris.length * 100;
             
             if(tetris.length > 0) {
                 this.audioPlayer.playSoundClip("touchDown");
                 this.audioPlayer.increaseMusicSpeed()
+                
                 this.animate(tetris)
                     .then(() => this.floodEmptyRows())
                     .then(() => resolve());
@@ -131,10 +131,10 @@ export default class Engine {
         const scope = [...this.canvas].reverse();
         for(let row of [...this.canvas].reverse()) {
             if(scope.shift().empty) {
-                const nextBricks = scope.find((pivot) => !pivot.empty);
-                if(!nextBricks) break;
+                const nextBlocks = scope.find((pivot) => !pivot.empty);
+                if(!nextBlocks) break;
             
-                this.canvas.move(nextBricks, row);
+                this.canvas.move(nextBlocks, row);
             }
         }
     }
@@ -152,10 +152,14 @@ export default class Engine {
             .then(() => blink());
     }
     
-    insert(brick = this.next, x = this.canvas.center-2, y = -1) {
-        if(this.canvas.valid(x, y, brick.shape)) {
-            this.current = {x, y, brick};
-            this.createNext(brick);
+    insertNext(block = this.next, x = this.canvas.center-2, y = -1) {
+        if(this.canvas.valid(x, y, block.shape)) {
+            this.current = {x, y, block};
+    
+            this.next && this.nextView.draw(0, 0, this.next.shape);
+            this.next = this.randomizer.next();
+            this.nextView.draw(0, 0, this.next.shape, this.next.color);
+            
             this.move(0, 1);
         }
         else {
@@ -165,11 +169,11 @@ export default class Engine {
     
     gameOver() {
         delete this.current;
+        clearTimeout(this.nextTick);
+        this.state = "game over";
+        
         this.audioPlayer.stopMusic();
         this.audioPlayer.playSoundClip("gameOver");
-        clearTimeout(this.nextTick);
-        alert('Game Over');
-        this.state = "game over";
     }
     
     lastPossible(start, destination, valid) {
@@ -185,22 +189,16 @@ export default class Engine {
         return destination;
     }
     
-    hide({x, y, brick: {shape}} = this.current) {
+    hide({x, y, block: {shape}} = this.current) {
         this.canvas.draw(x, y, shape);
     }
     
-    draw({x, y, brick: {shape, color}} = this.current) {
+    draw({x, y, block: {shape, color}} = this.current) {
         this.canvas.draw(x, y, shape, color);
     }
     
-    randomBrick() {
-        return new Brick(bricks[Math.floor(Math.random() * bricks.length)]);
-    }
-    
-    createNext() {
-        this.next && this.nextView.draw(0, 0, this.next.shape);
-        this.next = this.randomBrick();
-        this.nextView.draw(0, 0, this.next.shape, this.next.color);
+    get speed() {
+        return Math.max(200, this.tick - (this.counters.level * 50));
     }
     
     toggleAudio() {

@@ -6,7 +6,8 @@ export default class Tetris extends LightningElement {
     // Note: the canvas (array) needs to be declared here, to fulfill all tracking requirements.
     @track canvas;
     @track nextView;
-    engine;
+    @track engine;
+    @track counters;
     
     actions = {
         'ArrowRight': () => this.engine.move(1),
@@ -21,10 +22,11 @@ export default class Tetris extends LightningElement {
     
     reset() {
         this.engine && this.engine.stop();
+        this.counters = {score: 0, level: 0};
         
         this.canvas = new Canvas(10, 20);
         this.nextView = new Canvas(4, 4);
-        this.engine = new Engine(this.canvas, this.nextView);
+        this.engine = new Engine(this.canvas, this.nextView, this.counters);
     }
     
     execute = (evt) => {
@@ -40,13 +42,5 @@ export default class Tetris extends LightningElement {
     
     disconnectedCallback() {
         document.removeEventListener('keydown', this.execute);
-    }
-    
-    get level() {
-        return this.engine.level;
-    }
-    
-    get score() {
-        return this.engine.score;
     }
 }

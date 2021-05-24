@@ -13,6 +13,7 @@
                     </tr>
                 </thead>
                 <tbody>
+                    <tr><td>[M]</td><td>mute</td></tr>
                     <tr><td>[🡅]</td><td>rotate</td></tr>
                     <tr><td>[🡄][🡆]</td><td>move</td></tr>
                     <tr><td>[🡇]</td><td>soft drop</td></tr>
@@ -24,9 +25,9 @@
             <h2>Next</h2>
             <view-div-canvas canvas={nextView} scale="20" background="black" border="1px solid #000066"></view-div-canvas>
             
-            <h2>Level: {level}</h2>
+            <h2>Level: {counters.level}</h2>
             
-            <h2>Score: {score}</h2>
+            <h2>Score: {counters.score}</h2>
         </div>
     </div>
 </template>
