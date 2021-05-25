@@ -1,7 +1,7 @@
 import Randomizer from './sevenBagRandomizer';
 import AudioPlayer from '../../../audioPlayer/audioPlayer';
 
-const audioPlayer = new AudioPlayer("tetris");
+const audio = new AudioPlayer("tetris");
 
 export default class Engine {
     canvas;
@@ -11,51 +11,48 @@ export default class Engine {
     current;
     next;
     
-    audioPlayer;
-    
-    counters;
-    tetris = 0;
-    tick = 500;
+    maxLevel = 20;
+    tick = 600;
     nextTick;
-    state = 'new';
     
-    constructor(canvas, nextView, counters) {
+    constructor(canvas, nextView, state) {
         this.canvas = canvas;
         this.nextView = nextView;
         this.randomizer = new Randomizer();
-        this.audioPlayer = audioPlayer;
-        this.counters = counters;
+        this.state = state;
     }
     
     playPause() {
-        switch(this.state) {
+        switch(this.state.current) {
             case 'new':
-                this.audioPlayer.playMusic();
-                this.state = "running";
+                audio.play();
+                audio.speed(1);
+                this.state.current = "running";
                 this.insertNext(this.randomizer.next());
                 break;
             case 'paused':
-                this.audioPlayer.playMusic();
-                this.state = "running";
+                audio.play();
+                this.state.current = "running";
                 this.nextTick = setTimeout(() => this.move(0, 1), this.speed);
                 break;
             case 'running':
-                this.audioPlayer.pauseMusic();
+                audio.stop();
                 clearTimeout(this.nextTick);
-                this.state = "paused";
+                this.state.current = "paused";
                 break;
         }
     }
     
     stop() {
-        this.audioPlayer.stopMusic();
+        audio.stop();
         clearTimeout(this.nextTick);
-        this.state = "paused";
+        this.state.current = "paused";
     }
     
     rotate() {
-        this.audioPlayer.playSoundClip("rotate");
-        if(this.state !== "running" || !this.current) return;
+        if(this.state.current !== "running" || !this.current) return;
+        
+        audio.play("rotate");
         const {x, y, block: {shape}} = this.current;
         
         this.hide();
@@ -66,18 +63,20 @@ export default class Engine {
     }
     
     softDrop() {
-        if(this.state !== "running" || !this.current) return;
+        if(this.state.current !== "running" || !this.current) return;
+        
         clearTimeout(this.nextTick);
         this.move(0, 1);
     }
     
     hardDrop() {
-        if(this.state !== "running" || !this.current) return;
+        if(this.state.current !== "running" || !this.current) return;
+        
         this.move(0, this.canvas.height + 1);
     }
     
     move(xOffset, yOffset = 0) {
-        if(this.state !== "running" || !this.current) return;
+        if(this.state.current !== "running" || !this.current) return;
         
         const {x, y, block: {shape}} = this.current;
         
@@ -94,7 +93,7 @@ export default class Engine {
             if(this.current.y !== newY) {
                 delete this.current;
     
-                this.counters.score += 100;
+                this.state.score += 100;
                 
                 this.clearTetris()
                     .then(() => this.insertNext());
@@ -109,13 +108,13 @@ export default class Engine {
         return new Promise((resolve) => {
             const tetris = this.canvas.filter((row) => row.full);
             
-            this.tetris += tetris.length;
-            this.counters.level = (1 + (this.tetris / 10)) | 0;
-            this.counters.score += tetris.length * tetris.length * 100;
+            this.state.lines += tetris.length;
+            this.state.level = (1 + (this.state.lines / 10)) | 0;
+            this.state.score += tetris.length * tetris.length * 100;
             
             if(tetris.length > 0) {
-                this.audioPlayer.playSoundClip("touchDown");
-                this.audioPlayer.increaseMusicSpeed()
+                audio.play("touchDown");
+                audio.speed(1 + Math.min(0.5, (this.state.level-1) * (0.5 / this.maxLevel)));
                 
                 this.animate(tetris)
                     .then(() => this.floodEmptyRows())
@@ -170,10 +169,10 @@ export default class Engine {
     gameOver() {
         delete this.current;
         clearTimeout(this.nextTick);
-        this.state = "game over";
+        this.state.current = "game over";
         
-        this.audioPlayer.stopMusic();
-        this.audioPlayer.playSoundClip("gameOver");
+        audio.stop();
+        audio.play("gameOver");
     }
     
     lastPossible(start, destination, valid) {
@@ -198,10 +197,10 @@ export default class Engine {
     }
     
     get speed() {
-        return Math.max(200, this.tick - (this.counters.level * 50));
+        return Math.max(100, this.tick - (this.state.level * 500 / this.maxLevel));
     }
     
     toggleAudio() {
-        this.audioPlayer.toggleAudio();
+        audio.toggleAudio();
     }
 }
