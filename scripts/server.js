@@ -11,8 +11,8 @@ app.use(
             defaultSrc: ["'self'"],
             fontSrc: ["'self'", "data:"],
             styleSrc: ["'self'", "'unsafe-inline'"],
-            scriptSrc: ["'self'", "'unsafe-inline'", "https://www.gstatic.com"],
-            scriptSrcElem: ["'self'", "'unsafe-inline'", "https://www.gstatic.com"]
+            scriptSrc: ["'self'", "'unsafe-inline'", "https://www.gstatic.com", "https://lwc-tric-default-rtdb.europe-west1.firebasedatabase.app"],
+            scriptSrcElem: ["'self'", "'unsafe-inline'", "https://www.gstatic.com", "https://lwc-tric-default-rtdb.europe-west1.firebasedatabase.app"]
         }
     })
 );
