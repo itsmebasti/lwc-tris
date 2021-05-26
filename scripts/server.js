@@ -11,7 +11,7 @@ app.use(
             defaultSrc: ["'self'"],
             fontSrc: ["'self'", "data:"],
             styleSrc: ["'self'", "'unsafe-inline'"],
-            scriptSrcElem: ["'self'", "'unsafe-inline'"]
+            scriptSrcElem: ["'self'", "'unsafe-inline'", "'https://www.gstatic.com/firebasejs'"]
         }
     })
 );
