@@ -11,8 +11,8 @@ app.use(
             defaultSrc: ["'self'", "https://*.firebasedatabase.app"],
             fontSrc: ["'self'", "data:"],
             styleSrc: ["'self'", "'unsafe-inline'"],
-            scriptSrc: ["'self'", "'unsafe-inline'", "https://www.gstatic.com", "https://*.firebasedatabase.app"],
-            scriptSrcElem: ["'self'", "'unsafe-inline'", "https://www.gstatic.com", "https://*.firebasedatabase.app"]
+            connectSrc: ["'self'", "ws:"],
+            scriptSrc: ["'self'", "'unsafe-eval'", "'unsafe-inline'", "https://www.gstatic.com", "https://*.firebasedatabase.app"],
         }
     })
 );
