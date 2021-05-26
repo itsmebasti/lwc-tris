@@ -8,11 +8,11 @@ const app = express();
 app.use(
     helmet.contentSecurityPolicy({
         directives: {
-            defaultSrc: ["'self'"],
+            defaultSrc: ["'self'", "https://*.firebasedatabase.app"],
             fontSrc: ["'self'", "data:"],
             styleSrc: ["'self'", "'unsafe-inline'"],
-            scriptSrc: ["'self'", "'unsafe-inline'", "https://www.gstatic.com", "https://lwc-tric-default-rtdb.europe-west1.firebasedatabase.app"],
-            scriptSrcElem: ["'self'", "'unsafe-inline'", "https://www.gstatic.com", "https://lwc-tric-default-rtdb.europe-west1.firebasedatabase.app"]
+            scriptSrc: ["'self'", "'unsafe-inline'", "https://www.gstatic.com", "https://*.firebasedatabase.app"],
+            scriptSrcElem: ["'self'", "'unsafe-inline'", "https://www.gstatic.com", "https://*.firebasedatabase.app"]
         }
     })
 );
