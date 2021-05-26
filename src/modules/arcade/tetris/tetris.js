@@ -1,6 +1,10 @@
 import { LightningElement, track } from 'lwc';
 import Engine from './engine/engine';
 import Canvas from '../../view/divCanvas/model/canvas';
+import database from './database/database';
+import randomName from './randomName';
+
+const URL_PARAMS = new URL(window.location.href).searchParams;
 
 export default class Tetris extends LightningElement {
     // Note: the canvas (array) needs to be declared here, to fulfill all tracking requirements.
@@ -8,6 +12,27 @@ export default class Tetris extends LightningElement {
     @track nextView;
     @track state;
     engine;
+    room = URL_PARAMS.get('room');
+    player = randomName();
+    
+    @track competitors = [];
+    
+    reference = database.ref(this.room + '/competitors');
+    
+    renderedCallback() {
+        this.template.querySelector('.main').focus();
+    }
+    
+    connectedCallback() {
+        document.addEventListener('keydown', this.execute);
+        this.reference.on('child_changed', this.updateCompetitors);
+        this.reset();
+    }
+    
+    disconnectedCallback() {
+        document.removeEventListener('keydown', this.execute);
+        this.reference.off('child_changed', this.updateCompetitors);
+    }
     
     actions = {
         'ArrowRight': () => this.engine.move(1),
@@ -22,7 +47,7 @@ export default class Tetris extends LightningElement {
     };
     
     playPause() {
-        if(this.engine.state.current === "game over") {
+        if(this.engine.state.current === 'game over') {
             this.reset();
         }
         
@@ -40,6 +65,7 @@ export default class Tetris extends LightningElement {
         this.canvas = new Canvas(10, 20);
         this.nextView = new Canvas(4, 4);
         this.engine = new Engine(this.canvas, this.nextView, this.state);
+        this.engine.onchange(this.storeState);
     }
     
     execute = (evt) => {
@@ -47,13 +73,22 @@ export default class Tetris extends LightningElement {
         this.actions[evt.key] && this.actions[evt.key]();
     }
     
-    connectedCallback() {
-        document.addEventListener('keydown', this.execute);
+    updateCompetitors = (data) => {
+        const canvasArray = data.val();
+        if(this.player === data.key) return;
         
-        this.reset();
+        const index = this.competitors.findIndex((value) => value.key === data.key);
+        const newValue = {key: data.key, canvas: Canvas.for(canvasArray)};
+        
+        if(index === -1) {
+            this.competitors.push(newValue);
+        }
+        else {
+            this.competitors[index] = newValue;
+        }
     }
     
-    disconnectedCallback() {
-        document.removeEventListener('keydown', this.execute);
+    storeState = (canvas) => {
+        this.reference.child(this.player).set(JSON.parse(JSON.stringify(canvas)));
     }
 }

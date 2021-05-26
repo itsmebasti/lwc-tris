@@ -6,28 +6,30 @@
                 <view-div-canvas canvas={canvas} scale="20" background="black" border="1px solid #000066">
                     <div if:true={paused} class="overlay" slot="overlay">
                         <h1>[enter]<br>to play</h1>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <td><b>Key</b></td><td><b>Action</b></td>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr><td>[m]</td><td>unmute / mute audio</td></tr>
+                                <tr><td>[▲]</td><td>rotate</td></tr>
+                                <tr><td>[◄][►]</td><td>move</td></tr>
+                                <tr><td>[▼]</td><td>soft drop</td></tr>
+                                <tr><td>[space]</td><td>hard drop</td></tr>
+                                <tr><td>[enter]</td><td>start | pause | resume</td></tr>
+                                <tr><td>[r]</td><td>reset</td></tr>
+                            </tbody>
+                        </table>
                     </div>
                 </view-div-canvas>
             </div>
         </div>
         <div class="stats">
-            <h2>Control</h2>
-            <table>
-                <thead>
-                    <tr>
-                        <td><b>Key</b></td><td><b>Action</b></td>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr><td>[m]</td><td>unmute / mute audio</td></tr>
-                    <tr><td>[▲]</td><td>rotate</td></tr>
-                    <tr><td>[◄][►]</td><td>move</td></tr>
-                    <tr><td>[▼]</td><td>soft drop</td></tr>
-                    <tr><td>[space]</td><td>hard drop</td></tr>
-                    <tr><td>[esc]</td><td>start | pause | resume</td></tr>
-                    <tr><td>[r]</td><td>reset</td></tr>
-                </tbody>
-            </table>
+            <h3>Room: {room}</h3>
+            <h3>Player: <br>
+                {player}</h3>
             <br>
             <h2>Next</h2>
             <div class="next">
@@ -37,6 +39,12 @@
             <h3>Lines: {state.lines}</h3>
             <h3>Level: {state.level}</h3>
             <h3>Score: {state.score}</h3>
+        </div>
+        
+        <div for:each={competitors} for:item="competitor" key={competitor.key} class="competitors">
+            <h4>{competitor.key}</h4>
+            (under construction)
+            <view-div-canvas canvas={competitor.canvas} scale="10" background="grey"></view-div-canvas>
         </div>
     </div>
 </template>

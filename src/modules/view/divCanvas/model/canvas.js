@@ -1,8 +1,19 @@
 export default class Canvas extends Array {
     static get [Symbol.species]() { return Array; }
     
-    constructor(width, height, color) {
-        super(...array(height).map((y) => new Row(y, color, width)));
+    constructor(width, height) {
+        if(width && height) {
+            super(...array(height).map((y) => new Row(y, width)));
+        }
+        else {
+            super();
+        }
+    }
+    
+    static for(canvasArray) {
+        const result = new Canvas();
+        canvasArray.forEach((row, y) => result.push(Row.for(y, row)));
+        return result;
     }
     
     draw(x, y, shape, color) {
@@ -61,9 +72,21 @@ export default class Canvas extends Array {
 class Row extends Array {
     key;
     
-    constructor(y, color, width) {
-        super(...array(width).map((x) => newPixel(x, y, color)));
-        this.key = y;
+    constructor(y, width) {
+        if(y !== undefined && width) {
+            super(...array(width).map((x) => newPixel(x, y)));
+            this.key = y;
+        }
+        else {
+            super();
+        }
+    }
+    
+    static for(y, rowArray) {
+        const result = new Row();
+        rowArray.forEach((pixel) => result.push(newPixel(pixel.x, y, pixel.color)));
+        result.key = y;
+        return result;
     }
     
     copyFrom(other) {
@@ -87,17 +110,17 @@ class Row extends Array {
     }
 }
 
-function newPixel(x, y, initial) {
+function newPixel(x, y, color) {
     return {
-        x, y, initial,
+        x, y, color,
         key: y + '_' + x,
-        paint: function(color = initial) {
+        paint: function(color) {
             this.color = color;
             this.style = color ? 'background-color: ' + color : undefined;
             return this;
         },
-        get empty() { return this.color === this.initial; }
-    }.paint();
+        get empty() { return !this.color; }
+    }.paint(color);
 }
 
 function array(n) {

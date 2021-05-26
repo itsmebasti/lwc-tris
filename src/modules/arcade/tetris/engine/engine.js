@@ -15,11 +15,17 @@ export default class Engine {
     tick = 600;
     nextTick;
     
+    changeHandlers = [];
+    
     constructor(canvas, nextView, state) {
         this.canvas = canvas;
         this.nextView = nextView;
         this.randomizer = new Randomizer();
         this.state = state;
+    }
+    
+    onchange(callback) {
+        this.changeHandlers.push(callback);
     }
     
     playPause() {
@@ -60,6 +66,7 @@ export default class Engine {
             shape.rotate();
         }
         this.draw();
+        this.changeHandlers.forEach((handler) => handler(this.canvas));
     }
     
     softDrop() {
@@ -87,6 +94,7 @@ export default class Engine {
         this.current.x = this.lastPossible(x, newX, (x) => this.canvas.valid(x, y, shape));
         this.current.y = this.lastPossible(y, newY, (y) => this.canvas.valid(x, y, shape));
         this.draw();
+        this.changeHandlers.forEach((handler) => handler(this.canvas));
         
         if(yOffset) {
             clearTimeout(this.nextTick);
