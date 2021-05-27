@@ -74,7 +74,10 @@ export default class Tetris extends LightningElement {
     }
     
     updateCompetitors = (data) => {
-        this.competitors = Object.entries(data.val())
+        const all = data.val();
+        if(!all) return;
+        
+        this.competitors = Object.entries(all)
             .filter(([key, {time}]) => time > Date.now() - 3000 && key !== this.player)
             .map(([key, {state, canvas}]) => ({key, state, canvas: new Canvas({shape: canvas})}));
     }
