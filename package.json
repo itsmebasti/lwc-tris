@@ -12,7 +12,9 @@
     },
     "license": "CC0-1.0",
     "scripts": {
-        "local": "lwc-services build --mode production && node scripts/server.js",
+        "build": "lwc-services build --mode production",
+        "serve": "node scripts/server.js",
+        "local": "yarn build && yarn serve",
         "watch": "lwc-services watch"
     }
 }
