@@ -11,8 +11,8 @@ export default class Engine {
     current;
     next;
     
-    maxLevel = 20;
-    tick = 600;
+    maxLevel = 15;
+    tick = 400;
     nextTick;
     
     changeHandlers = [];
@@ -205,7 +205,8 @@ export default class Engine {
     }
     
     get speed() {
-        return Math.max(100, this.tick - (this.state.level * 500 / this.maxLevel));
+        const min = 100;
+        return Math.max(min, this.tick - (this.state.level * (this.tick - min) / this.maxLevel));
     }
     
     toggleAudio() {
