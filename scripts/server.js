@@ -10,7 +10,6 @@ const DIST_DIR = './dist';
 express()
     .use(
         helmet.contentSecurityPolicy({
-            useDefaults: true,
             directives: {
                 defaultSrc: ["'self'", 'https://*.firebasedatabase.app'],
                 fontSrc: ["'self'", 'data:'],
