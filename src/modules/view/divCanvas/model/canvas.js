@@ -1,23 +1,24 @@
 export default class Canvas extends Array {
     static get [Symbol.species]() { return Array; }
     
-    constructor(width, height) {
-        if(width && height) {
-            super(...array(height).map((y) => new Row(y, width)));
+    constructor({width, height, shape}) {
+        if(shape) {
+            width = shape[0].length;
+            height = shape.length;
         }
-        else {
-            super();
-        }
-    }
+        
+        super(...array(height).map((y) => new Row(y, width)));
     
-    static for(canvasArray) {
-        const result = new Canvas();
-        canvasArray.forEach((row, y) => result.push(Row.for(y, row)));
-        return result;
+        if(shape) {
+            this.forEach((row, y) => row.copyFrom(shape[y]));
+        }
     }
     
     draw(x, y, shape, color) {
-        shape.forPixel((xOffset, yOffset) => this.paint(x + xOffset, y + yOffset, color));
+        shape.forPixel((xOffset, yOffset) => {
+            color = color || shape[yOffset][xOffset].color;
+            this.paint(x + xOffset, y + yOffset, color);
+        });
     }
     
     paint(x, y, color) {
@@ -73,20 +74,8 @@ class Row extends Array {
     key;
     
     constructor(y, width) {
-        if(y !== undefined && width) {
-            super(...array(width).map((x) => newPixel(x, y)));
-            this.key = y;
-        }
-        else {
-            super();
-        }
-    }
-    
-    static for(y, rowArray) {
-        const result = new Row();
-        rowArray.forEach((pixel) => result.push(newPixel(pixel.x, y, pixel.color)));
-        result.key = y;
-        return result;
+        super(...array(width).map((x) => newPixel(x, y)));
+        this.key = y;
     }
     
     copyFrom(other) {

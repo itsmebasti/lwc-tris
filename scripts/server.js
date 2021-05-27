@@ -1,33 +1,30 @@
-// Simple Express server setup to serve the build output
 const compression = require('compression');
 const helmet = require('helmet');
 const express = require('express');
 const path = require('path');
 
-const app = express();
-app.use(
-    helmet.contentSecurityPolicy({
-        directives: {
-            defaultSrc: ["'self'", "https://*.firebasedatabase.app"],
-            fontSrc: ["'self'", "data:"],
-            styleSrc: ["'self'", "'unsafe-inline'"],
-            connectSrc: ["'self'", "ws:"],
-            scriptSrc: ["'self'", "'unsafe-eval'", "'unsafe-inline'", "https://www.gstatic.com", "https://*.firebasedatabase.app"],
-        }
-    })
-);
-app.use(compression());
-
 const HOST = process.env.HOST || 'localhost';
 const PORT = process.env.PORT || 3001;
 const DIST_DIR = './dist';
 
-app.use(express.static(DIST_DIR));
-
-app.use('*', (req, res) => {
-    res.sendFile(path.resolve(DIST_DIR, 'index.html'));
-});
-
-app.listen(PORT, () =>
-    console.log(`✅  Server started: http://${HOST}:${PORT}`)
-);
+express()
+    .use(
+        helmet.contentSecurityPolicy({
+            useDefaults: true,
+            directives: {
+                defaultSrc: ["'self'", 'https://*.firebasedatabase.app'],
+                fontSrc: ["'self'", 'data:'],
+                styleSrc: ["'self'", "'unsafe-inline'"],
+                connectSrc: ["'self'", 'ws:'],
+                scriptSrc: ["'self'", "'unsafe-eval'", "'unsafe-inline'", 'https://www.gstatic.com', 'https://*.firebasedatabase.app'],
+            }
+        })
+    )
+    .use(compression())
+    .use(express.static(DIST_DIR))
+    .use('*', (req, res) => {
+        res.sendFile(path.resolve(DIST_DIR, 'index.html'));
+    })
+    .listen(PORT, () =>
+        console.log(`✅  Server started: http://${HOST}:${PORT}`)
+    );

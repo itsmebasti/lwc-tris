@@ -11,28 +11,13 @@ export default class Tetris extends LightningElement {
     @track canvas;
     @track nextView;
     @track state;
+    rendered = false;
     engine;
     room = URL_PARAMS.get('room');
     player = randomName();
+    session = database.ref('room/' + this.room);
     
     @track competitors = [];
-    
-    reference = database.ref(this.room + '/competitors');
-    
-    renderedCallback() {
-        this.template.querySelector('.main').focus();
-    }
-    
-    connectedCallback() {
-        document.addEventListener('keydown', this.execute);
-        this.reference.on('child_changed', this.updateCompetitors);
-        this.reset();
-    }
-    
-    disconnectedCallback() {
-        document.removeEventListener('keydown', this.execute);
-        this.reference.off('child_changed', this.updateCompetitors);
-    }
     
     actions = {
         'ArrowRight': () => this.engine.move(1),
@@ -46,6 +31,40 @@ export default class Tetris extends LightningElement {
         'm': () => this.engine.toggleAudio()
     };
     
+    renderedCallback() {
+        if(!this.rendered) {
+            this.rendered = true;
+            // Note: in combination with tabindex=1 this works inside iframes
+            this.template.querySelector('.main').focus();
+        }
+    }
+    
+    connectedCallback() {
+        document.addEventListener('keydown', this.execute);
+        this.session.child('competitors').on('value', this.updateCompetitors);
+        this.reset();
+    }
+    
+    disconnectedCallback() {
+        document.removeEventListener('keydown', this.execute);
+        this.session.child('competitors').off('value', this.updateCompetitors);
+    }
+    
+    execute = (evt) => {
+        evt.preventDefault();
+        this.actions[evt.key] && this.actions[evt.key]();
+    }
+    
+    reset() {
+        this.engine && this.engine.stop();
+        this.state = {score: 0, level: 0, current: 'new', lines: 0};
+        
+        this.canvas = new Canvas({width: 10, height: 20});
+        this.nextView = new Canvas({width: 4, height: 4});
+        this.engine = new Engine(this.canvas, this.nextView, this.state);
+        this.engine.onchange(this.uploadState);
+    }
+    
     playPause() {
         if(this.engine.state.current === 'game over') {
             this.reset();
@@ -54,41 +73,21 @@ export default class Tetris extends LightningElement {
         this.engine.playPause();
     }
     
+    updateCompetitors = (data) => {
+        this.competitors = Object.entries(data.val())
+            .filter(([key, {time}]) => time > Date.now() - 3000 && key !== this.player)
+            .map(([key, {state, canvas}]) => ({key, state, canvas: new Canvas({shape: canvas})}));
+    }
+    
+    uploadState = (canvas) => {
+        this.session.child('competitors/'+this.player).set({
+            time: Date.now(),
+            state: this.state,
+            canvas: JSON.parse(JSON.stringify(canvas))
+        });
+    }
+    
     get paused() {
         return this.engine.state.current !== "running";
-    }
-    
-    reset() {
-        this.engine && this.engine.stop();
-        this.state = {score: 0, level: 0, current: 'new', lines: 0};
-        
-        this.canvas = new Canvas(10, 20);
-        this.nextView = new Canvas(4, 4);
-        this.engine = new Engine(this.canvas, this.nextView, this.state);
-        this.engine.onchange(this.storeState);
-    }
-    
-    execute = (evt) => {
-        evt.preventDefault();
-        this.actions[evt.key] && this.actions[evt.key]();
-    }
-    
-    updateCompetitors = (data) => {
-        const canvasArray = data.val();
-        if(this.player === data.key) return;
-        
-        const index = this.competitors.findIndex((value) => value.key === data.key);
-        const newValue = {key: data.key, canvas: Canvas.for(canvasArray)};
-        
-        if(index === -1) {
-            this.competitors.push(newValue);
-        }
-        else {
-            this.competitors[index] = newValue;
-        }
-    }
-    
-    storeState = (canvas) => {
-        this.reference.child(this.player).set(JSON.parse(JSON.stringify(canvas)));
     }
 }
