@@ -2,6 +2,7 @@ import { LightningElement, api } from 'lwc';
 
 export default class Toast extends LightningElement {
     message;
+    @api background;
     
     @api show(value) {
         this.message = value;
@@ -10,7 +11,11 @@ export default class Toast extends LightningElement {
         if(value && toast.className === '') {
             toast.className = 'show';
             
-            setTimeout(() => toast.className = '', 3000);
+            setTimeout(() => toast.className = '', 2900);
         }
+    }
+    
+    get style() {
+        return `background: ${this.background}`;
     }
 }

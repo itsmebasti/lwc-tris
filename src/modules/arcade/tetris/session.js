@@ -14,18 +14,14 @@ export default class Session {
     }
     
     connect(canvas, state) {
-        this.cleanup()
+        return this.cleanup()
+            .then(() => this.update({ state, canvas, joined: Date.now(), connected: Date.now() }))
             .then(() => {
-                this.update({ state, canvas, joined: Date.now() });
-            
                 const connect = () => this.ref(`competitors/${this.player}/connected`).set(Date.now());
                 const loop = setInterval(connect, 1000);
                 this.disconnects.push(() => clearInterval(loop));
-            
-                this.subscribeBlocks();
-            });
-        
-        return this;
+            })
+            .then(() => this.subscribeBlocks());
     }
     
     ref(child) {
@@ -51,19 +47,11 @@ export default class Session {
     }
     
     requestStart() {
-        const assert = (condition, message) => {
-            if( !condition) {
-                throw new Error(message);
-            }
-        };
-        
-        const playing = (players) => `${players.join(', ')} ${players.length === 1 ? ' is' : 'are'} still playing`;
-        
         return this.cleanup()
                    .then(() => this.queryHost())
-                   .then((host) => assert(this.player === host, host + ' is your current Host'))
+                   .then((host) => this.assert(this.player === host, host + ' is your current Host'))
                    .then(() => this.queryPlaying())
-                   .then((players) => assert(players.length === 0, playing(players)))
+                   .then((players) => this.assert(players.length === 0, this.stillPlaying(players)))
                    .then(() => this.ref('blocks').set(this.json(shuffled7Bag())))
                    .then(() => 'Good Luck!')
                    .catch((message) => message);
@@ -87,18 +75,13 @@ export default class Session {
                    .once('value')
                    .then((deprecated) => {
                        const removals = [];
-            
-                       deprecated.forEach(({ ref }) => {
-                           removals.push(ref.remove());
-                           return false;
-                       });
-            
+                       deprecated.forEach(({ref}) => (removals.push(ref.remove()), false));
                        return Promise.all(removals);
                    });
     }
     
     update(competitor) {
-        this.ref(`competitors/${this.player}`).update(this.json(competitor));
+        return this.ref(`competitors/${this.player}`).update(this.json(competitor));
     }
     
     onCompetitorUpdate(callback) {
@@ -134,13 +117,31 @@ export default class Session {
         return this.ref('competitors')
                    .orderByChild('state/playing').equalTo(true)
                    .once('value')
-                   .then((data) => {
+                   .then((playing) => {
                        const names = [];
-                       data.forEach(({ key }) => {
-                           names.push(key);
-                           return false;
-                       });
+                       playing.forEach(({ key }) => (names.push(key), false));
                        return names;
                    });
+    }
+    
+    stillPlaying(players) {
+        let result = '';
+        
+        const multiple = (players.length > 1);
+        
+        if(multiple) {
+            result += players.slice(0, -1).join(', ') + ' and ';
+        }
+        
+        result += players.slice(-1);
+        result += ` ${multiple ? 'are' : 'is'} still playing`;
+        
+        return result;
+    }
+    
+    assert(condition, message) {
+        if( !condition) {
+            throw new Error(message);
+        }
     }
 }

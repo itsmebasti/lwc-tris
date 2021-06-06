@@ -20,7 +20,7 @@ export default class Tetris extends LightningElement {
     nextBlock;
     
     session;
-    room = URL_PARAMS.get('room') || randomName();
+    room = URL_PARAMS.get('room') || 'Default';
     player = randomName();
     @track competitors = [];
     
@@ -42,18 +42,20 @@ export default class Tetris extends LightningElement {
         this.canvas = new Canvas({width: 10, height: 20});
         this.nextView = new Canvas({height: 4, width: 4});
         this.engine = new Engine(this.canvas, () => this.state.speed);
-        this.session = new Session(this.room, this.player)
-                                .connect(this.canvas, this.state);
+        this.session = new Session(this.room, this.player);
     }
     
     connectedCallback() {
         document.addEventListener('keydown', this.execute);
         
-        this.session.onStart(this.startRound);
-        this.session.onCompetitorUpdate(this.updateCompetitor);
-        this.session.onCompetitorQuit(this.removeCompetitor);
-        
-        this.addEngineHandlers();
+        this.session.connect(this.canvas, this.state)
+            .then(() => {
+                this.session.onStart(this.startRound);
+                this.session.onCompetitorUpdate(this.updateCompetitor);
+                this.session.onCompetitorQuit(this.removeCompetitor);
+    
+                this.addEngineHandlers();
+            });
     }
     
     disconnectedCallback() {
@@ -91,13 +93,17 @@ export default class Tetris extends LightningElement {
     
     requestStart() {
         this.session.requestStart()
-            .then((message) => this.toast(message));
+            .then((errorOrString) => this.toast(errorOrString.message || errorOrString));
     }
     
     pause() {
-        this.toast('Pausing is not possible during multi player mode');
-        // this.engine.pause();
-        // audio.stop();
+        // if(this.competitors.length) {
+            this.toast('Pausing is not possible during multi player mode');
+        // }
+        // else {
+        //     this.engine.pause();
+        //     audio.stop();
+        // }
     }
     
     resume() {

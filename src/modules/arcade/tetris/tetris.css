@@ -4,7 +4,8 @@
   border-radius: 25px;
   background-color: #00a1e0;
   display: inline-flex;
-  max-width: 700px;
+  max-width: 800px;
+  position: relative;
 }
 
 .main > * {

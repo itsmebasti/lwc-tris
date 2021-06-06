@@ -47,6 +47,7 @@ class AudioClip extends Audio {
     }
     
     play() {
+        if(this.muted) return;
         this.currentTime = 0;
         super.play();
     }
