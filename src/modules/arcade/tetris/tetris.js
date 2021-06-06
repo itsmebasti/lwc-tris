@@ -1,22 +1,27 @@
 import { LightningElement, track } from 'lwc';
 import Engine from './engine/engine';
-import Canvas from '../../view/divCanvas/model/canvas';
-import database from './database/database';
+import Canvas from '../../view/model/canvas';
+import Session from './session';
+import AudioPlayer from '../../audioPlayer/audioPlayer';
+import Shape from '../../view/model/shape';
 import randomName from './randomName';
+import trackableState from './engine/trackableState';
 
+const audio = new AudioPlayer("tetris");
 const URL_PARAMS = new URL(window.location.href).searchParams;
 
 export default class Tetris extends LightningElement {
     // Note: the canvas (array) needs to be declared here, to fulfill all tracking requirements.
     @track canvas;
-    @track nextView;
     @track state;
-    rendered = false;
     engine;
-    room = URL_PARAMS.get('room');
-    player = randomName();
-    session = database.ref('room/' + this.room);
     
+    @track nextView;
+    nextBlock;
+    
+    session;
+    room = URL_PARAMS.get('room') || randomName();
+    player = randomName();
     @track competitors = [];
     
     actions = {
@@ -28,26 +33,41 @@ export default class Tetris extends LightningElement {
         'r': () => this.reset(),
         'Escape': () => this.playPause(),
         'Enter': () => this.playPause(),
-        'm': () => this.engine.toggleAudio()
+        'm': () => audio.toggleAudio()
     };
     
-    renderedCallback() {
-        if(!this.rendered) {
-            this.rendered = true;
-            // Note: in combination with tabindex=1 this works inside iframes
-            this.template.querySelector('.main').focus();
-        }
+    constructor() {
+        super();
+        this.state = trackableState();
+        this.canvas = new Canvas({width: 10, height: 20});
+        this.nextView = new Canvas({height: 4, width: 4});
+        this.engine = new Engine(this.canvas, () => this.state.speed);
+        this.session = new Session(this.room, this.player)
+                                .connect(this.canvas, this.state);
     }
     
     connectedCallback() {
         document.addEventListener('keydown', this.execute);
-        this.session.child('competitors').on('value', this.updateCompetitors);
-        this.reset();
+        
+        this.session.onStart(this.startRound);
+        this.session.onCompetitorUpdate(this.updateCompetitor);
+        this.session.onCompetitorQuit(this.removeCompetitor);
+        
+        this.addEngineHandlers();
     }
     
     disconnectedCallback() {
         document.removeEventListener('keydown', this.execute);
-        this.session.child('competitors').off('value', this.updateCompetitors);
+        this.session.disconnect();
+        this.engine.reset();
+    }
+    
+    playPause() {
+        switch(this.engine.state) {
+            case 'stopped': return this.requestStart();
+            case 'paused': return this.resume();
+            case 'running': return this.pause();
+        }
     }
     
     execute = (evt) => {
@@ -56,41 +76,100 @@ export default class Tetris extends LightningElement {
     }
     
     reset() {
-        this.engine && this.engine.stop();
-        this.state = {score: 0, level: 0, current: 'new', lines: 0};
+        audio.speed(1);
+        this.state.reset();
+        this.engine.reset();
+        this.canvas.reset();
+        this.nextView.reset();
         
-        this.canvas = new Canvas({width: 10, height: 20});
-        this.nextView = new Canvas({width: 4, height: 4});
-        this.engine = new Engine(this.canvas, this.nextView, this.state);
-        this.engine.onchange(this.uploadState);
-    }
-    
-    playPause() {
-        if(this.engine.state.current === 'game over') {
-            this.reset();
-        }
-        
-        this.engine.playPause();
-    }
-    
-    updateCompetitors = (data) => {
-        const all = data.val();
-        if(!all) return;
-        
-        this.competitors = Object.entries(all)
-            .filter(([key, {time}]) => time > Date.now() - 3000 && key !== this.player)
-            .map(([key, {state, canvas}]) => ({key, state, canvas: new Canvas({shape: canvas})}));
-    }
-    
-    uploadState = (canvas) => {
-        this.session.child('competitors/'+this.player).set({
-            time: Date.now(),
-            state: this.state,
-            canvas: JSON.parse(JSON.stringify(canvas))
-        });
+        this.nextBlock = undefined;
     }
     
     get paused() {
-        return this.engine.state.current !== "running";
+        return !this.state.playing;
+    }
+    
+    requestStart() {
+        this.session.requestStart()
+            .then((message) => this.toast(message));
+    }
+    
+    pause() {
+        this.toast('Pausing is not possible during multi player mode');
+        // this.engine.pause();
+        // audio.stop();
+    }
+    
+    resume() {
+        this.engine.resume();
+        audio.play();
+    }
+    
+    startRound = () => {
+        this.reset();
+        this.state.start();
+        this.engine.start();
+        audio.play();
+    }
+    
+    updateCompetitor = (name, {state, canvas}) => {
+        const index = this.competitors.findIndex((player) => player.name === name);
+        const newValue = {name, state, canvas: new Canvas({rows: canvas})};
+    
+        if(index === -1) {
+            this.competitors.push(newValue);
+        }
+        else {
+            this.competitors[index] = newValue;
+        }
+    }
+    
+    removeCompetitor = (removed) => {
+        this.competitors = this.competitors.filter(({name}) => name !== removed)
+    }
+    
+    addEngineHandlers() {
+        this.engine.handle('insertBlock', () => {
+            this.engine.insertNext(this.nextBlock || new Shape(this.session.nextBlock()));
+    
+            this.nextBlock = new Shape(this.session.nextBlock());
+            this.nextView.reset();
+            this.nextView.draw(0, 0, this.nextBlock);
+        });
+    
+        this.engine.handle('change', (canvas) => this.session.update({ state: this.state, canvas }));
+        
+        this.engine.handle('rotate', () => audio.play("rotate"));
+        
+        this.engine.handle('lock', () => {
+            this.state.lockedBlock();
+            audio.play("touchDown");
+        });
+        
+        this.engine.handle('tetris', (tetris) => {
+            this.state.apply(tetris);
+            audio.speed(1 + 0.5 * this.state.levelFactor);
+        });
+        
+        this.engine.handle('gameOver', () => {
+            audio.stop();
+            audio.play("gameOver");
+    
+            this.state.stop();
+            this.session.update({ state: this.state });
+        });
+    }
+    
+    rendered = false;
+    renderedCallback() {
+        if(!this.rendered) {
+            this.rendered = true;
+            // Note: in combination with tabindex=1 this works inside iframes
+            this.template.querySelector('.main').focus();
+        }
+    }
+    
+    toast(message) {
+        this.template.querySelector('view-toast').show(message);
     }
 }

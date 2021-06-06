@@ -4,7 +4,7 @@
             <slot name="overlay"></slot>
         </div>
         
-        <div for:each={canvas} for:item="row" key={row.key} class="row">
+        <div for:each={canvas} for:item="row" key={row.y} class="row">
             <div for:each={row} for:item="pixel" key={pixel.key} class="cell" style={cellBorder}>
                 <div class="pixel"
                     style={pixel.style}

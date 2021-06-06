@@ -1,5 +1,7 @@
 <template>
     <div class="main" tabindex="0">
+        <view-toast></view-toast>
+        
         <div class="game">
             <h2>LWC-TRIS</h2>
             <div class="screen view">
@@ -41,8 +43,8 @@
             <h3>Score: {state.score}</h3>
         </div>
         <div class="competitors">
-            <div for:each={competitors} for:item="competitor" key={competitor.key} class="competitor">
-                {competitor.key}
+            <div for:each={competitors} for:item="competitor" key={competitor.name} class="competitor">
+                {competitor.name}
                 <br>
                 Level: {competitor.state.level}
                 <br>

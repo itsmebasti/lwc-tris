@@ -1,137 +1,148 @@
-import Randomizer from './sevenBagRandomizer';
-import AudioPlayer from '../../../audioPlayer/audioPlayer';
-
-const audio = new AudioPlayer("tetris");
+import Shape from '../../../view/model/shape';
 
 export default class Engine {
     canvas;
-    nextView;
-    
-    randomizer;
     current;
-    next;
     
-    maxLevel = 15;
-    tick = 400;
     nextTick;
+    getSpeed;
     
-    changeHandlers = [];
+    on = {
+        change: [],
+        insertBlock: [],
+        rotate: [],
+        lock: [],
+        tetris: [],
+        gameOver: []
+    };
     
-    constructor(canvas, nextView, state) {
+    constructor(canvas, getSpeed) {
         this.canvas = canvas;
-        this.nextView = nextView;
-        this.randomizer = new Randomizer();
-        this.state = state;
+        this.getSpeed = getSpeed;
     }
     
-    onchange(callback) {
-        this.changeHandlers.push(callback);
+    handle(event, callback) {
+        this.on[event].push(callback);
     }
     
-    playPause() {
-        switch(this.state.current) {
-            case 'new':
-                audio.play();
-                audio.speed(1);
-                this.state.current = "running";
-                this.insertNext(this.randomizer.next());
-                break;
-            case 'paused':
-                audio.play();
-                this.state.current = "running";
-                this.nextTick = setTimeout(() => this.move(0, 1), this.speed);
-                break;
-            case 'running':
-                audio.stop();
-                clearTimeout(this.nextTick);
-                this.state.current = "paused";
-                break;
-        }
+    publish(event, detail) {
+        return this.on[event].forEach((handler) => handler(detail));
     }
     
-    stop() {
-        audio.stop();
-        clearTimeout(this.nextTick);
-        this.state.current = "paused";
+    start() {
+        this.publish('insertBlock');
     }
     
-    rotate() {
-        if(this.state.current !== "running" || !this.current) return;
+    pause() {
+        this.stopLoop();
+    }
+    
+    resume() {
+        this.startLoop();
+    }
+    
+    reset() {
+        this.pause();
+        delete this.current;
+    }
+    
+    get state() {
+        return (this.nextTick && this.current) ? 'running' :
+            (this.current) ? 'paused' : 'stopped'
+    }
+    
+    insertNext(block) {
+        const x = this.canvas.center-2;
+        const y = -1;
         
-        audio.play("rotate");
-        const {x, y, block: {shape}} = this.current;
-        
-        this.hide();
-        if(this.canvas.valid(x, y, shape.rotated())) {
-            shape.rotate();
+        if(this.canvas.valid(x, y, block)) {
+            this.current = {x, y, block};
+            this.softDrop();
         }
-        this.draw();
-        this.changeHandlers.forEach((handler) => handler(this.canvas));
+        else {
+            this.canvas.draw(x, y, block, 'grey');
+            this.gameOver();
+        }
     }
     
     softDrop() {
-        if(this.state.current !== "running" || !this.current) return;
-        
-        clearTimeout(this.nextTick);
+        this.stopLoop();
         this.move(0, 1);
+        this.startLoop();
     }
     
     hardDrop() {
-        if(this.state.current !== "running" || !this.current) return;
+        this.move(0, this.canvas.height);
+    }
+    
+    rotate() {
+        if(!this.current) return;
+        const {x, y, block} = this.current;
         
-        this.move(0, this.canvas.height + 1);
+        this.apply(() => {
+            const rotated = block.rotated();
+            if(this.canvas.valid(x, y, rotated)) {
+                this.current.block = rotated;
+                this.publish('rotate');
+            }
+        });
     }
     
     move(xOffset, yOffset = 0) {
-        if(this.state.current !== "running" || !this.current) return;
-        
-        const {x, y, block: {shape}} = this.current;
+        if(!this.current) return;
+        const {x, y, block} = this.current;
         
         const newX = x+xOffset;
         const newY = y+yOffset;
         
-        this.hide();
-        this.current.x = this.lastPossible(x, newX, (x) => this.canvas.valid(x, y, shape));
-        this.current.y = this.lastPossible(y, newY, (y) => this.canvas.valid(x, y, shape));
-        this.draw();
-        this.changeHandlers.forEach((handler) => handler(this.canvas));
+        this.apply(() => {
+            this.current.x = this.lastPossible(x, newX, (x) => this.canvas.valid(x, y, block));
+            this.current.y = this.lastPossible(y, newY, (y) => this.canvas.valid(x, y, block));
+        });
         
-        if(yOffset) {
-            clearTimeout(this.nextTick);
-            if(this.current.y !== newY) {
-                delete this.current;
-    
-                this.state.score += 100;
-                
-                this.clearTetris()
-                    .then(() => this.insertNext());
-            }
-            else {
-                this.nextTick = setTimeout(() => this.move(0, 1), this.speed);
-            }
+        if(this.current.y !== newY) {
+            this.lockCurrent();
+
+            this.clearTetris()
+                .then(() => this.publish('insertBlock'));
         }
     }
     
-    clearTetris() {
-        return new Promise((resolve) => {
-            const tetris = this.canvas.filter((row) => row.full);
+    apply(change) {
+        this.hide();
+        change();
+        this.show();
+        
+        this.publish('change', this.canvas);
+    }
+    
+    hide() {
+        const {x, y, block} = this.current;
+        this.canvas.clear(x, y, block);
+    }
+    
+    show() {
+        const {x, y, block} = this.current;
+        this.canvas.draw(x, y, block);
+    }
+    
+    lockCurrent() {
+        delete this.current;
+        this.stopLoop();
+        this.publish('lock', this.canvas);
+    }
+    
+    async clearTetris() {
+        const tetris = this.canvas.filter((row) => row.full);
+        
+        if(tetris.length) {
+            this.publish('tetris', tetris);
             
-            this.state.lines += tetris.length;
-            this.state.level = (1 + (this.state.lines / 10)) | 0;
-            this.state.score += tetris.length * tetris.length * 100;
+            const coords = tetris.map(({y}) => ({ x: 0, y }));
             
-            if(tetris.length > 0) {
-                audio.play("touchDown");
-                audio.speed(1 + Math.min(0.5, (this.state.level-1) * (0.5 / this.maxLevel)));
-                
-                this.animate(tetris)
-                    .then(() => this.floodEmptyRows())
-                    .then(() => resolve());
-            }
-            else {
-                resolve();
-            }
-        })
+            await this.canvas.animate(coords, this.getSpeed(), 5, [this.row(), this.row('grey')])
+                      .then(() => this.floodEmptyRows());
+        }
     }
     
     floodEmptyRows() {
@@ -140,47 +151,20 @@ export default class Engine {
             if(scope.shift().empty) {
                 const nextBlocks = scope.find((pivot) => !pivot.empty);
                 if(!nextBlocks) break;
-            
-                this.canvas.move(nextBlocks, row);
+    
+                this.canvas.draw(0, row.y, new Shape([nextBlocks]));
+                this.canvas.replace(0, nextBlocks.y, this.row());
             }
         }
     }
     
-    animate(tetris) {
-        const blink = (color) => {
-            tetris.forEach((row) => row.fill(color));
-            return new Promise((resolve) => setTimeout(resolve, this.speed/5))
-        }
-        
-        return blink()
-            .then(() => blink('grey'))
-            .then(() => blink())
-            .then(() => blink('grey'))
-            .then(() => blink());
-    }
-    
-    insertNext(block = this.next, x = this.canvas.center-2, y = -1) {
-        if(this.canvas.valid(x, y, block.shape)) {
-            this.current = {x, y, block};
-    
-            this.next && this.nextView.draw(0, 0, this.next.shape);
-            this.next = this.randomizer.next();
-            this.nextView.draw(0, 0, this.next.shape, this.next.color);
-            
-            this.move(0, 1);
-        }
-        else {
-            this.gameOver();
-        }
+    row(color) {
+        return new Shape([new Array(this.canvas.width).fill({color})]);
     }
     
     gameOver() {
-        delete this.current;
-        clearTimeout(this.nextTick);
-        this.state.current = "game over";
-        
-        audio.stop();
-        audio.play("gameOver");
+        this.lockCurrent();
+        this.publish('gameOver');
     }
     
     lastPossible(start, destination, valid) {
@@ -196,20 +180,13 @@ export default class Engine {
         return destination;
     }
     
-    hide({x, y, block: {shape}} = this.current) {
-        this.canvas.draw(x, y, shape);
+    startLoop() {
+        if(this.nextTick) throw "already running";
+        this.nextTick = setInterval(() => this.move(0, 1), this.getSpeed());
     }
     
-    draw({x, y, block: {shape, color}} = this.current) {
-        this.canvas.draw(x, y, shape, color);
-    }
-    
-    get speed() {
-        const min = 100;
-        return Math.max(min, this.tick - (this.state.level * (this.tick - min) / this.maxLevel));
-    }
-    
-    toggleAudio() {
-        audio.toggleAudio();
+    stopLoop() {
+        clearInterval(this.nextTick);
+        this.nextTick = undefined;
     }
 }

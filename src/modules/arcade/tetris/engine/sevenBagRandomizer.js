@@ -1,34 +1,21 @@
-import Shape from '../../../view/divCanvas/model/shape';
+import Shape from '../../../view/model/shape';
 
-export default class SevenBagRandomizer {
-    currentBag = [];
-    current;
+const I = new Shape([[0,0,0,0], [1,1,1,1], [0,0,0,0]], 'blue');
+const O = new Shape([[0,0,0,0],[0,1,1,0], [0,1,1,0],[0,0,0,0]], 'yellow');
+const T = new Shape([[0,0,0], [1,1,1], [0,1,0]], 'green');
+const L = new Shape([[0,0,0], [1,1,1], [1,0,0]], 'maroon');
+const J = new Shape([[0,0,0], [1,1,1], [0,0,1]], 'red');
+const Z = new Shape([[0,0,0], [1,1,0], [0,1,1], [0,0,0]], 'purple');
+const S = new Shape([[0,0,0], [0,1,1], [1,1,0], [0,0,0]], 'orange');
+const blocks = [I, O, T, L, J, Z, S];
+
+export function shuffled7Bag() {
+    const result = blocks.map((block) => block.clone());
     
-    next() {
-        if(this.currentBag.length === 0) {
-            this.currentBag = this.shuffledBag();
-        }
-        
-        this.current = this.currentBag.pop();
-        return this.current;
+    for(let i = result.length - 1; i > 0; i--) {
+        const j = Math.random() * (i + 1) | 0;
+        [result[i], result[j]] = [result[j], result[i]];
     }
     
-    shuffledBag() {
-        const blocks = [
-            {type: 'I', color: 'blue',   shape: new Shape([0,0,0,0], [1,1,1,1], [0,0,0,0])},
-            {type: 'O', color: 'yellow', shape: new Shape([0,0,0,0],[0,1,1,0], [0,1,1,0],[0,0,0,0])},
-            {type: 'T', color: 'green',  shape: new Shape([0,0,0], [1,1,1], [0,1,0])},
-            {type: 'L', color: 'maroon', shape: new Shape([0,0,0], [1,1,1], [1,0,0])},
-            {type: 'J', color: 'red',    shape: new Shape([0,0,0], [1,1,1], [0,0,1])},
-            {type: 'Z', color: 'purple', shape: new Shape([0,0,0], [1,1,0], [0,1,1], [0,0,0])},
-            {type: 'S', color: 'orange', shape: new Shape([0,0,0], [0,1,1], [1,1,0], [0,0,0])}
-        ];
-    
-        for(let i = blocks.length - 1; i > 0; i--) {
-            const j = Math.random() * (i + 1) | 0;
-            [blocks[i], blocks[j]] = [blocks[j], blocks[i]];
-        }
-        
-        return blocks;
-    }
+    return result;
 }
