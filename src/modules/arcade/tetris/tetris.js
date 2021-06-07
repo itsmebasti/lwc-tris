@@ -1,11 +1,10 @@
 import { LightningElement, track } from 'lwc';
 import Engine from './engine/engine';
 import Canvas from '../../view/model/canvas';
-import Session from './session';
+import Session from './database/session';
 import AudioPlayer from '../../audioPlayer/audioPlayer';
 import Shape from '../../view/model/shape';
-import randomName from './randomName';
-import trackableState from './engine/trackableState';
+import trackableState from './trackableState';
 
 const audio = new AudioPlayer("tetris");
 const URL_PARAMS = new URL(window.location.href).searchParams;
@@ -89,6 +88,28 @@ export default class Tetris extends LightningElement {
             .catch((errorOrString) => this.toast(errorOrString.message || errorOrString));
     }
     
+    requireSession() {
+        if(!this.player) {
+            return Promise.reject('Please enter a name');
+        }
+        
+        if(!this.session) {
+            this.session = new Session(this.room, this.player);
+            
+            return this.session.connect(this.canvas, this.state)
+                       .then(() => {
+                           this.session.onStart(this.startRound);
+                           this.session.onCompetitorUpdate(this.updateCompetitor);
+                           this.session.onCompetitorQuit(this.removeCompetitor);
+                
+                           this.addEngineHandlers();
+                       })
+        }
+        else {
+            return Promise.resolve();
+        }
+    }
+    
     pause() {
         this.toast('Pausing is not possible during multi player mode');
     }
@@ -159,34 +180,11 @@ export default class Tetris extends LightningElement {
     renderedCallback() {
         if(!this.rendered) {
             this.rendered = true;
-            // Note: in combination with tabindex=1 this works inside iframes
-            this.template.querySelector('.main').focus();
+            this.template.querySelector('input').focus();
         }
     }
     
     toast(message) {
         this.template.querySelector('view-toast').show(message);
-    }
-    
-    requireSession() {
-        if(!this.player) {
-            return Promise.reject('Please enter a name');
-        }
-        
-        if(!this.session) {
-            this.session = new Session(this.room, this.player);
-            
-            return this.session.connect(this.canvas, this.state)
-                .then(() => {
-                    this.session.onStart(this.startRound);
-                    this.session.onCompetitorUpdate(this.updateCompetitor);
-                    this.session.onCompetitorQuit(this.removeCompetitor);
-        
-                    this.addEngineHandlers();
-                })
-        }
-        else {
-            return Promise.resolve();
-        }
     }
 }

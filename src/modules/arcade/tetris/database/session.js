@@ -1,5 +1,5 @@
-import database from './database/database';
-import { shuffled7Bag } from './engine/sevenBagRandomizer';
+import database from './database';
+import { shuffled7Bag } from '../engine/sevenBagRandomizer';
 
 export default class Session {
     reference;
