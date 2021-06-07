@@ -7,8 +7,11 @@
             <div class="screen view">
                 <view-div-canvas canvas={canvas} scale="20" background="black" border="1px solid #000066">
                     <div if:true={paused} class="overlay" slot="overlay">
+                        
+                        <label if:false={session} for="name">name: </label>
+                        <input if:false={session} type="text" id="name" name="name" onkeyup={updateName}>
                         <h1>[enter]<br>to play</h1>
-                        <table>
+                        <table if:false={highScore}>
                             <thead>
                                 <tr>
                                     <td><b>Key</b></td><td><b>Action</b></td>
@@ -22,6 +25,16 @@
                                 <tr><td>[space]</td><td>hard drop</td></tr>
                                 <tr><td>[enter]</td><td>pause | resume</td></tr>
                                 <tr><td>[r]</td><td>reset</td></tr>
+                            </tbody>
+                        </table>
+                        <table if:true={highScore}>
+                            <thead>
+                                <tr>
+                                    <td><b>player</b></td><td><b>score</b></td>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr for:each={highScore} for:item="entry" key={entry.player}><td>{entry.player}</td><td>{entry.score}</td></tr>
                             </tbody>
                         </table>
                     </div>

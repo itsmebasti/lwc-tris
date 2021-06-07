@@ -46,6 +46,19 @@ export default class Session {
         });
     }
     
+    addScore(state) {
+        this.update({state});
+        
+        return database.ref(`highScore/${this.player}`).set(state.score)
+            .catch((ignored) => {})
+            .then(() => database.ref('highScore').orderByChild('score').limitToLast(10).once('value'))
+            .then((data) => {
+                const result = [];
+                data.forEach((entry) => (result.unshift({player: entry.key, score: entry.val()}), false));
+                return result;
+            });
+    }
+    
     requestStart() {
         return this.cleanup()
                    .then(() => this.queryHost())
@@ -80,8 +93,8 @@ export default class Session {
                    });
     }
     
-    update(competitor) {
-        return this.ref(`competitors/${this.player}`).update(this.json(competitor));
+    update(player) {
+        return this.ref(`competitors/${this.player}`).update(this.json(player));
     }
     
     onCompetitorUpdate(callback) {
@@ -94,19 +107,8 @@ export default class Session {
         this.bind(this.ref('competitors'), 'child_removed', ({ key }) => callback(key));
     }
     
-    bind(reference, event, callback) {
-        reference.on(event, callback);
-        
-        this.disconnects.push(() => reference.off(event, callback));
-    }
-    
-    json(value) {
-        return JSON.parse(JSON.stringify(value));
-    }
-    
     queryHost() {
-        return this.reference
-                   .child('competitors')
+        return this.ref('competitors')
                    .orderByChild('joined')
                    .limitToFirst(1)
                    .once('child_added')
@@ -137,6 +139,16 @@ export default class Session {
         result += ` ${multiple ? 'are' : 'is'} still playing`;
         
         return result;
+    }
+    
+    bind(reference, event, callback) {
+        reference.on(event, callback);
+        
+        this.disconnects.push(() => reference.off(event, callback));
+    }
+    
+    json(value) {
+        return JSON.parse(JSON.stringify(value));
     }
     
     assert(condition, message) {

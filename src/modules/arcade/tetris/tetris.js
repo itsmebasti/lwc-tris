@@ -18,10 +18,11 @@ export default class Tetris extends LightningElement {
     
     @track nextView;
     nextBlock;
+    highScore;
     
     session;
     room = URL_PARAMS.get('room') || 'Default';
-    player = randomName();
+    player;
     @track competitors = [];
     
     actions = {
@@ -30,8 +31,6 @@ export default class Tetris extends LightningElement {
         'ArrowUp': () => this.engine.rotate(),
         'ArrowDown': () => this.engine.softDrop(),
         ' ': () => this.engine.hardDrop(),
-        'r': () => this.reset(),
-        'Escape': () => this.playPause(),
         'Enter': () => this.playPause(),
         'm': () => audio.toggleAudio()
     };
@@ -42,20 +41,10 @@ export default class Tetris extends LightningElement {
         this.canvas = new Canvas({width: 10, height: 20});
         this.nextView = new Canvas({height: 4, width: 4});
         this.engine = new Engine(this.canvas, () => this.state.speed);
-        this.session = new Session(this.room, this.player);
     }
     
     connectedCallback() {
         document.addEventListener('keydown', this.execute);
-        
-        this.session.connect(this.canvas, this.state)
-            .then(() => {
-                this.session.onStart(this.startRound);
-                this.session.onCompetitorUpdate(this.updateCompetitor);
-                this.session.onCompetitorQuit(this.removeCompetitor);
-    
-                this.addEngineHandlers();
-            });
     }
     
     disconnectedCallback() {
@@ -73,8 +62,11 @@ export default class Tetris extends LightningElement {
     }
     
     execute = (evt) => {
-        evt.preventDefault();
         this.actions[evt.key] && this.actions[evt.key]();
+    }
+    
+    updateName(evt) {
+        this.player = evt.target.value;
     }
     
     reset() {
@@ -83,7 +75,6 @@ export default class Tetris extends LightningElement {
         this.engine.reset();
         this.canvas.reset();
         this.nextView.reset();
-        
         this.nextBlock = undefined;
     }
     
@@ -92,18 +83,14 @@ export default class Tetris extends LightningElement {
     }
     
     requestStart() {
-        this.session.requestStart()
-            .then((errorOrString) => this.toast(errorOrString.message || errorOrString));
+        this.requireSession()
+            .then(() => this.session.requestStart())
+            .then((errorOrString) => this.toast(errorOrString.message || errorOrString))
+            .catch((errorOrString) => this.toast(errorOrString.message || errorOrString));
     }
     
     pause() {
-        // if(this.competitors.length) {
-            this.toast('Pausing is not possible during multi player mode');
-        // }
-        // else {
-        //     this.engine.pause();
-        //     audio.stop();
-        // }
+        this.toast('Pausing is not possible during multi player mode');
     }
     
     resume() {
@@ -116,6 +103,7 @@ export default class Tetris extends LightningElement {
         this.state.start();
         this.engine.start();
         audio.play();
+        this.highScore = undefined;
     }
     
     updateCompetitor = (name, {state, canvas}) => {
@@ -162,7 +150,8 @@ export default class Tetris extends LightningElement {
             audio.play("gameOver");
     
             this.state.stop();
-            this.session.update({ state: this.state });
+            this.session.addScore(this.state)
+                .then((highScore) => this.highScore = highScore)
         });
     }
     
@@ -177,5 +166,27 @@ export default class Tetris extends LightningElement {
     
     toast(message) {
         this.template.querySelector('view-toast').show(message);
+    }
+    
+    requireSession() {
+        if(!this.player) {
+            return Promise.reject('Please enter a name');
+        }
+        
+        if(!this.session) {
+            this.session = new Session(this.room, this.player);
+            
+            return this.session.connect(this.canvas, this.state)
+                .then(() => {
+                    this.session.onStart(this.startRound);
+                    this.session.onCompetitorUpdate(this.updateCompetitor);
+                    this.session.onCompetitorQuit(this.removeCompetitor);
+        
+                    this.addEngineHandlers();
+                })
+        }
+        else {
+            return Promise.resolve();
+        }
     }
 }
