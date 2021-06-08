@@ -16,6 +16,10 @@ export default class AudioPlayer {
     toggleAudio() {
         this.muted = !this.muted;
         Object.values(this.clips).forEach((clip) => clip.muted = this.muted);
+        
+        if(!this.muted) {
+            this.play();
+        }
     }
     
     play(name = 'main') {

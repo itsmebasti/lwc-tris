@@ -46,11 +46,6 @@ export default class Engine {
         delete this.current;
     }
     
-    get state() {
-        return (this.nextTick && this.current) ? 'running' :
-            (this.current) ? 'paused' : 'stopped'
-    }
-    
     insertNext(block) {
         const x = this.canvas.center-2;
         const y = -1;

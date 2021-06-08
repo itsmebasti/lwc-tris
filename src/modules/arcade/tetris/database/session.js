@@ -51,7 +51,7 @@ export default class Session {
         
         return database.ref(`highScore/${this.player}`).set(state.score)
             .catch((ignored) => {})
-            .then(() => database.ref('highScore').orderByChild('score').limitToLast(10).once('value'))
+            .then(() => database.ref('highScore').orderByValue().limitToLast(10).once('value'))
             .then((data) => {
                 const result = [];
                 data.forEach((entry) => (result.unshift({player: entry.key, score: entry.val()}), false));
@@ -67,7 +67,6 @@ export default class Session {
                    .then((players) => this.assert(players.length === 0, this.stillPlaying(players)))
                    .then(() => this.ref('blocks').set(this.json(shuffled7Bag())))
                    .then(() => 'Good Luck!')
-                   .catch((message) => message);
     }
     
     nextBlock() {
