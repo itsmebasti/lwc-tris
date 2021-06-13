@@ -2,3 +2,10 @@
   display: flex;
   flex-wrap: wrap;
 }
+
+.view {
+  width: max-content;
+  border: #000066 solid 3px;
+  padding: 1px;
+  margin: 3px;
+}
