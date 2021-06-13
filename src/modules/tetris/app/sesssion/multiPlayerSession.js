@@ -5,7 +5,7 @@ import Session from './session';
 export default class MultiPlayerSession extends Session {
     room;
     
-    constructor(room) {
+    constructor(room = 'Default') {
         super('connect', 'start', 'competitorUpdate', 'competitorQuit');
         
         this.room = this.ref(`rooms/${room}`);

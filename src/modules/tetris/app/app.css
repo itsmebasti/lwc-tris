@@ -11,8 +11,9 @@
   padding: 20px;
 }
 
-.game h1, h2 {
-  margin-top: auto;
+h1, h2, h3, h4, h5 {
+  margin: 0;
+  padding: 5px;
   text-align: center;
 }
 
@@ -26,9 +27,25 @@
   width: max-content;
   border: #000066 solid 3px;
   padding: 1px;
+  margin: auto;
 }
 
 input {
-  background: #303030;
-  color: white;
+  margin-top: 5px;
+  width: 92px;
+}
+
+select {
+  margin-top: 5px;
+  width: 100px;
+}
+
+.details {
+  width: 100px;
+}
+
+.truncate {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }

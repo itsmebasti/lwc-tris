@@ -38,11 +38,9 @@
                 </arcade-view>
             </div>
         </div>
-        <div class="stats">
-            <h3>{player}
-                <label if:false={player} for="name">name: </label>
-                <input if:false={player} type="text" id="name" class="name" onkeydown={commitName} autofocus>
-            </h3>
+        <div class="details">
+            <p class="truncate">{player}</p>
+            <input if:false={player} type="text" placeholder="name">
             <select onchange={toggleMode}>
                 <option value="s">Single Player</option>
                 <option value="m" selected>Battle</option>
@@ -53,10 +51,9 @@
             <div class="next view">
                 <arcade-view canvas={nextView} scale="20" background="black" border="1px solid #000066"></arcade-view>
             </div>
-            
-            <h4>Lines: {state.lines}</h4>
-            <h4>Level: {state.level}</h4>
-            <h3>Score: {state.score}</h3>
+            <h4>lines {state.lines}</h4>
+            <h4>level {state.level}</h4>
+            <h4>score<br>{state.score}</h4>
         </div>
         <tetris-competitors session={session}></tetris-competitors>
     </div>

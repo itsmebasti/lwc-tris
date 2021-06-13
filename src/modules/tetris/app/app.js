@@ -5,64 +5,71 @@ import AudioPlayer from '../../../classes/audioPlayer';
 import KeyListener from '../../../classes/keyListener';
 import SinglePlayerSession from './sesssion/singlePlayerSession';
 import MultiPlayerSession from './sesssion/multiPlayerSession';
-
-const audio = new AudioPlayer("tetris");
-const URL_PARAMS = new URL(window.location.href).searchParams;
+import cookie from '../../../classes/cookie';
+import url from '../../../classes/url';
 
 export default class App extends LightningElement {
-    @track canvas;
-    @track nextView
+    @track canvas = new Canvas({width: 10, height: 20});
+    @track nextView = new Canvas({height: 4, width: 4});
     
+    engine = new Engine(this.canvas);
+    state = this.engine.state;
+    
+    keyListener = new KeyListener(15, 250);
+    audio = new AudioPlayer("tetris");
+    
+    player = cookie.player;
     session;
-    engine;
-    state;
-    keyListener;
-    highScore;
     
-    room = URL_PARAMS.get('room') || 'Default';
-    player;
+    highScore;
     
     constructor() {
         super();
-        this.canvas = new Canvas({width: 10, height: 20});
-        this.nextView = new Canvas({height: 4, width: 4});
-        this.engine = new Engine(this.canvas);
-        this.state = this.engine.state;
-        this.keyListener = new KeyListener(15, 250);
+        this.keyListener.listen({'Enter': this.commitName});
         this.load(MultiPlayerSession);
-        
         this.addEngineHandlers();
     }
     
     load(Session) {
-        this.session && this.session.disconnect();
-    
         this.engine.reset();
         this.nextView.clear();
-        
-        this.session = new Session(this.room);
+    
+        this.session && this.session.disconnect();
+        this.session = new Session(url.room);
         this.session.on('start', this.startRound);
-        
-        if(this.player) {
-            this.connect(this.player);
-        }
-        else {
-            this.keyListener.stopListening();
-        }
+    
+        this.connect(this.player);
     }
     
-    commitName(evt) {
-        if(evt.key === 'Enter') {
-            const player = evt.target.value.trim();
-            (player.length) ? this.connect(player) : this.toast('Please enter a name');
-        }
+    commitName = () => {
+        const input = this.template.querySelector('input');
+        input.focus();
+        this.connect(input.value.trim());
     }
     
     connect(player) {
-        this.session.connect(player, this.canvas, this.state)
+        if(player) {
+            this.tryToConnect(player)
+                .catch(() => new Promise((resolve) => setTimeout(resolve, 2000))
+                    .then(() => this.tryToConnect(player)))
+                .catch((error) => {
+                    this.player = undefined;
+                    return (error.code === 'PERMISSION_DENIED') ? player + ' is already playing' : error;
+                })
+                .then(this.toast);
+        }
+        else {
+            this.toast('please enter a name');
+        }
+    }
+    
+    tryToConnect(player) {
+        return this.session.connect(player, this.canvas, this.state)
             .then(() => {
                 this.player = player;
-                
+                cookie.player = player;
+        
+                this.keyListener.stopListening();
                 this.keyListener.listen({
                     'ArrowRight': () => this.engine.move(1),
                     'ArrowLeft': () => this.engine.move(-1),
@@ -70,11 +77,9 @@ export default class App extends LightningElement {
                     'ArrowDown': () => this.engine.softDrop(),
                     ' ': () => this.engine.hardDrop(),
                     'Enter': () => (this.state.playing) ? this.engine.pauseResume() : this.requestStart(),
-                    'm': () => audio.toggleAudio()
+                    'm': () => this.audio.toggleAudio()
                 });
             })
-            .catch((error) => (error.code === 'PERMISSION_DENIED') ? player + ' is already playing' : error)
-            .then(this.toast);
     }
     
     disconnectedCallback() {
@@ -105,11 +110,11 @@ export default class App extends LightningElement {
         });
         this.engine.on('gameOver', () => this.session.update({state: this.state}).then(this.queryHighScore));
     
-        this.engine.on('start', () => audio.speed(1) && audio.play());
-        this.engine.on('rotate', () => audio.play("rotate"));
-        this.engine.on('lock', () => audio.play("lock"));
-        this.engine.on('tetris', () => audio.play("clear") && audio.speed(1 + 0.5 * this.engine.levelFactor));
-        this.engine.on('gameOver', () => audio.stop() && audio.play("gameOver"));
+        this.engine.on('start', () => this.audio.speed(1) && this.audio.play());
+        this.engine.on('rotate', () => this.audio.play("rotate"));
+        this.engine.on('lock', () => this.audio.play("lock"));
+        this.engine.on('tetris', () => this.audio.play("clear") && this.audio.speed(1 + 0.5 * this.engine.levelFactor));
+        this.engine.on('gameOver', () => this.audio.stop() && this.audio.play("gameOver"));
     }
     
     queryHighScore = () => {
@@ -117,33 +122,21 @@ export default class App extends LightningElement {
             .then((highScore) => this.highScore = highScore)
     }
     
-    get running() {
-        return this.state.playing && !this.state.paused;
-    }
-    
     toggleMode({target}) {
         target.blur();
         this.load( (target.value === 's') ? SinglePlayerSession : MultiPlayerSession);
     }
     
-    get multiPlayer() {
-        return (this.session instanceof MultiPlayerSession);
+    renderedCallback() {
+        !this.player && this.template.querySelector('input').focus();
     }
     
-    rendered = false;
-    renderedCallback() {
-        if(!this.rendered) {
-            this.rendered = true;
-            this.template.querySelector('input').focus();
-        }
+    get running() {
+        return this.state.playing && !this.state.paused;
     }
     
     toast = (errorOrMessage) => {
         errorOrMessage && this.template.querySelector('arcade-toast')
             .show(errorOrMessage.message ? errorOrMessage.message : errorOrMessage);
-    }
-    
-    json(value) {
-        return JSON.parse(JSON.stringify(value));
     }
 }
