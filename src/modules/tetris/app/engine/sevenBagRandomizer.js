@@ -1,4 +1,4 @@
-import Shape from '../../../view/model/shape';
+import Shape from '../../../arcade/view/model/shape';
 
 const I = new Shape([[0,0,0,0], [1,1,1,1], [0,0,0,0]], 'blue');
 const O = new Shape([[0,0,0,0],[0,1,1,0], [0,1,1,0],[0,0,0,0]], 'yellow');

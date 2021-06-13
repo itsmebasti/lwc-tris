@@ -1,6 +1,6 @@
 import { LightningElement, api } from "lwc";
 
-export default class DivCanvas extends LightningElement {
+export default class View extends LightningElement {
     @api canvas = [];
     @api scale;
     @api background;

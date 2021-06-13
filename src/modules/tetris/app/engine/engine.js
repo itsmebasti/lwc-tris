@@ -1,58 +1,75 @@
-import Shape from '../../../view/model/shape';
+import Shape from '../../../arcade/view/model/shape';
+import Publisher from '../../../../classes/publisher';
 
-export default class Engine {
+const maxLevel = 15;
+const maxSpeed = 400;
+const minSpeed = 100;
+
+export default class Engine extends Publisher {
     canvas;
+    blockStream;
     current;
-    
     nextTick;
-    getSpeed;
+    state;
     
-    on = {
-        change: [],
-        insertBlock: [],
-        rotate: [],
-        lock: [],
-        tetris: [],
-        gameOver: []
-    };
-    
-    constructor(canvas, getSpeed) {
+    constructor(canvas) {
+        super('start', 'next', 'change', 'rotate', 'lock', 'tetris', 'gameOver');
         this.canvas = canvas;
-        this.getSpeed = getSpeed;
-    }
-    
-    handle(event, callback) {
-        this.on[event].push(callback);
-    }
-    
-    publish(event, detail) {
-        return this.on[event].forEach((handler) => handler(detail));
-    }
-    
-    start() {
-        this.publish('insertBlock');
-    }
-    
-    pause() {
-        this.stopLoop();
-    }
-    
-    resume() {
-        this.startLoop();
+        this.reset();
     }
     
     reset() {
-        this.pause();
+        this.stopLoop();
         delete this.current;
+        this.canvas.clear();
+        this.state = new Proxy({
+            score: 0,
+            level: 1,
+            lines: 0,
+            playing: false,
+            paused: false,
+        }, {
+            set: (state, property, value) => {
+                state[property] = value;
+                this.publish('change', {state: {...state}});
+                return true;
+            }
+        })
+        this.publish('change', {state: {...this.state}});
     }
     
-    insertNext(block) {
+    start(blockStream) {
+        this.reset();
+        
+        this.blockStream = blockStream;
+        this.insertBlock();
+        this.state.playing = true
+    }
+    
+    pauseResume() {
+        if(this.state.paused) {
+            this.startLoop();
+            this.state.paused = false;
+        }
+        else {
+            this.stopLoop();
+            this.state.paused = true;
+        }
+    }
+    
+    nextBlock() {
+        return this.blockStream.view();
+    }
+    
+    insertBlock() {
+        const block = this.blockStream.read();
         const x = this.canvas.center-2;
         const y = -1;
         
         if(this.canvas.valid(x, y, block)) {
             this.current = {x, y, block};
             this.softDrop();
+            this.publish('next');
         }
         else {
             this.canvas.draw(x, y, block, 'grey');
@@ -61,17 +78,21 @@ export default class Engine {
     }
     
     softDrop() {
+        if(!this.current || this.state.paused) return;
         this.stopLoop();
         this.move(0, 1);
         this.startLoop();
     }
     
     hardDrop() {
+        if(!this.current || this.state.paused) return;
+        this.stopLoop();
         this.move(0, this.canvas.height);
+        this.startLoop();
     }
     
     rotate() {
-        if(!this.current) return;
+        if(!this.current || this.state.paused) return;
         const {x, y, block} = this.current;
         
         this.apply(() => {
@@ -84,7 +105,7 @@ export default class Engine {
     }
     
     move(xOffset, yOffset = 0) {
-        if(!this.current) return;
+        if(!this.current || this.state.paused) return;
         const {x, y, block} = this.current;
         
         const newX = x+xOffset;
@@ -99,7 +120,7 @@ export default class Engine {
             this.lockCurrent();
 
             this.clearTetris()
-                .then(() => this.publish('insertBlock'));
+                .then(() => this.insertBlock());
         }
     }
     
@@ -108,7 +129,7 @@ export default class Engine {
         change();
         this.show();
         
-        this.publish('change', this.canvas);
+        this.publish('change', {canvas: this.canvas});
     }
     
     hide() {
@@ -124,7 +145,8 @@ export default class Engine {
     lockCurrent() {
         delete this.current;
         this.stopLoop();
-        this.publish('lock', this.canvas);
+        this.state.score += 100
+        this.publish('lock');
     }
     
     async clearTetris() {
@@ -132,10 +154,13 @@ export default class Engine {
         
         if(tetris.length) {
             this.publish('tetris', tetris);
+            this.state.lines += tetris.length;
+            this.state.level = (1 + (this.state.lines / 10)) | 0;
+            this.state.score += tetris.length * tetris.length * 100;
             
             const coords = tetris.map(({y}) => ({ x: 0, y }));
             
-            await this.canvas.animate(coords, this.getSpeed(), 5, [this.row(), this.row('grey')])
+            await this.canvas.animate(coords, this.speed, 5, [this.row(), this.row('grey')])
                       .then(() => this.floodEmptyRows());
         }
     }
@@ -159,6 +184,7 @@ export default class Engine {
     
     gameOver() {
         this.lockCurrent();
+        this.state.playing = false;
         this.publish('gameOver');
     }
     
@@ -177,11 +203,19 @@ export default class Engine {
     
     startLoop() {
         if(this.nextTick) throw "already running";
-        this.nextTick = setInterval(() => this.move(0, 1), this.getSpeed());
+        this.nextTick = setInterval(() => this.move(0, 1), this.speed);
     }
     
     stopLoop() {
         clearInterval(this.nextTick);
         this.nextTick = undefined;
+    }
+    
+    get speed() {
+        return (maxSpeed - (maxSpeed - minSpeed) * this.levelFactor) | 0;
+    }
+    
+    get levelFactor() {
+        return Math.min(1, (this.state.level-1) / (maxLevel-1));
     }
 }

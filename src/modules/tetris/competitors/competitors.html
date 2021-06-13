@@ -1,0 +1,15 @@
+<template>
+    <div class="competitors">
+        <div for:each={competitors} for:item="competitor" key={competitor.name} class="competitor">
+            {competitor.name}
+            <br>
+            Level: {competitor.state.level}
+            <br>
+            Score: {competitor.state.score}
+            <br>
+            <div class="view">
+                <arcade-view canvas={competitor.canvas} scale="8" background="#303030"></arcade-view>
+            </div>
+        </div>
+    </div>
+</template>

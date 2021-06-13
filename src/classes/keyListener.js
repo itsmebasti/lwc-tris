@@ -7,13 +7,13 @@ export default class KeyListener {
     keys = new Set();
     repeatTimeouts = {};
     
-    constructor(actions = {}, repeat = 30, after = 500) {
-        this.actions = actions;
+    constructor(repeat = 30, after = 500) {
         this.repeat = repeat;
         this.after = after;
     }
     
-    listen() {
+    listen(actions = this.actions) {
+        this.actions = actions;
         document.addEventListener('keydown', this.addKey);
         document.addEventListener('keyup', this.removeKey);
     }
@@ -31,9 +31,9 @@ export default class KeyListener {
             
             clearInterval(this.interval);
             this.apply([...this.keys, key]);
-            this.interval = setInterval(() => this.apply([...this.keys]), this.repeat);
-            
             this.repeatTimeouts[key] = setTimeout(() => this.keys.add(key), this.after);
+            
+            this.interval = setInterval(() => this.apply([...this.keys]), this.repeat);
         }
     }
     

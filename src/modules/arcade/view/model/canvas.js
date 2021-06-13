@@ -20,6 +20,11 @@ export default class Canvas extends Shape {
         });
     }
     
+    set(x, y, shape, color) {
+        this.clear();
+        this.draw(x, y, shape, color);
+    }
+    
     replace(x, y, shape) {
         shape.forEach((row) =>
             row.forEach(({color, x: xOffset, y: yOffset}) => {
@@ -28,7 +33,7 @@ export default class Canvas extends Shape {
         );
     }
     
-    clear(x, y, shape) {
+    clear(x = 0, y = 0, shape = this) {
         shape.forPixel((xOffset, yOffset) => this.paint(x + xOffset, y + yOffset));
     }
     
@@ -46,10 +51,6 @@ export default class Canvas extends Shape {
             return y + yOffset >= 0 && y + yOffset < height
                 && x + xOffset >= 0 && x + xOffset < width;
         });
-    }
-    
-    reset() {
-        this.forPixel((x , y) => this.paint(x, y));
     }
     
     get center() {

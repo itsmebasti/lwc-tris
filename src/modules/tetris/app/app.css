@@ -7,7 +7,7 @@
   position: relative;
 }
 
-.main > * {
+.main > div {
   padding: 20px;
 }
 
@@ -26,11 +26,6 @@
   width: max-content;
   border: #000066 solid 3px;
   padding: 1px;
-}
-
-.competitors {
-  display: flex;
-  flex-wrap: wrap;
 }
 
 input {
