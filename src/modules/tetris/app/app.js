@@ -38,29 +38,31 @@ export default class App extends LightningElement {
         this.session = new Session(url.room);
         this.session.on('start', this.startRound);
     
-        this.connect(this.player);
+        this.player && this.connect(this.player);
     }
     
     commitName = () => {
         const input = this.template.querySelector('input');
         input.focus();
-        this.connect(input.value.trim());
-    }
-    
-    connect(player) {
-        if(player) {
-            this.tryToConnect(player)
-                .catch(() => new Promise((resolve) => setTimeout(resolve, 2000))
-                    .then(() => this.tryToConnect(player)))
-                .catch((error) => {
-                    this.player = undefined;
-                    return (error.code === 'PERMISSION_DENIED') ? player + ' is already playing' : error;
-                })
-                .then(this.toast);
+        const player = input.value.trim();
+        
+        if(player.length) {
+            this.connect(player);
         }
         else {
             this.toast('please enter a name');
         }
+    }
+    
+    connect(player) {
+        this.tryToConnect(player)
+            .catch(() => new Promise((resolve) => setTimeout(resolve, 2000))
+                .then(() => this.tryToConnect(player)))
+            .catch((error) => {
+                this.player = undefined;
+                return (error.code === 'PERMISSION_DENIED') ? player + ' is already playing' : error;
+            })
+            .then(this.toast);
     }
     
     tryToConnect(player) {
