@@ -8,15 +8,14 @@ export default class SinglePlayerSession extends Session {
         super('connect', 'start', 'disconnect');
     }
     
-    connect(player) {
+    async connect(player) {
         this.player = player;
         this.publish('connect');
-        return Promise.resolve();
     }
     
-    startBlockStream() {
+    async startBlockStream() {
         this.publish('start', new BlockStream());
-        return Promise.resolve('Good Luck!');
+        return 'Good Luck!';
     }
     
     update(data) {

@@ -9,10 +9,6 @@ export default class Shape extends Array {
         return new Shape(this);
     }
     
-    print() {
-        console.table(this.map((row) => row.map(({color}) => color)));
-    }
-    
     forPixel(callback) {
         this.forEach((row) =>
             row.forEach(({color, x, y}) => color && callback(x, y))
@@ -34,8 +30,7 @@ export default class Shape extends Array {
     }
     
     emptyAt(x, y) {
-        const pixel = this.pixel(x, y);
-        return !pixel || pixel.empty;
+        return this.pixel(x, y)?.empty;
     }
     
     paint(x, y, color) {
@@ -56,7 +51,11 @@ export default class Shape extends Array {
     }
     
     get width() {
-        return this.height ? this[0].length : 0;
+        return this[0]?.length ?? 0;
+    }
+    
+    print() {
+        console.table(this.map((row) => row.map(({color}) => color)));
     }
 }
 

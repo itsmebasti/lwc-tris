@@ -1,4 +1,4 @@
-import database from '../../../../classes/database';
+import database from './database';
 import Publisher from '../../../../classes/publisher';
 
 export default class Session extends Publisher {

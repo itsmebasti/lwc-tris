@@ -5,8 +5,10 @@ import AudioPlayer from '../../../classes/audioPlayer';
 import KeyListener from '../../../classes/keyListener';
 import SinglePlayerSession from './sesssion/singlePlayerSession';
 import MultiPlayerSession from './sesssion/multiPlayerSession';
-import cookie from '../../../classes/cookie';
+import cookies from '../../../classes/cookie';
 import url from '../../../classes/url';
+
+const COOKIE = cookies('tetris');
 
 export default class App extends LightningElement {
     @track canvas = new Canvas({width: 10, height: 20});
@@ -18,7 +20,7 @@ export default class App extends LightningElement {
     keyListener = new KeyListener(15, 250);
     audio = new AudioPlayer("tetris");
     
-    player = cookie.player;
+    player = COOKIE.player;
     session;
     
     highScore;
@@ -69,7 +71,7 @@ export default class App extends LightningElement {
         return this.session.connect(player, this.canvas, this.state)
             .then(() => {
                 this.player = player;
-                cookie.player = player;
+                COOKIE.player = player;
         
                 this.keyListener.stopListening();
                 this.keyListener.listen({
@@ -106,8 +108,7 @@ export default class App extends LightningElement {
     addEngineHandlers = () => {
         this.engine.on('next', () => this.nextView.set(0, 0, this.engine.nextBlock()));
         this.engine.on('change', (changed) => {
-            if(changed.state) this.state = changed.state;
-    
+            this.state = changed.state ?? this.state;
             this.session.update(changed);
         });
         this.engine.on('gameOver', () => this.session.update({state: this.state}).then(this.queryHighScore));
@@ -139,6 +140,6 @@ export default class App extends LightningElement {
     
     toast = (errorOrMessage) => {
         errorOrMessage && this.template.querySelector('arcade-toast')
-            .show(errorOrMessage.message ? errorOrMessage.message : errorOrMessage);
+            .show(errorOrMessage.message ?? errorOrMessage);
     }
 }
