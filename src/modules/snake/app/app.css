@@ -1,0 +1,25 @@
+.main {
+  font-family: sans-serif;
+  border-radius: 25px;
+  background-color: #00a1e0;
+  display: inline-flex;
+  max-width: 800px;
+  position: relative;
+}
+
+.main > div {
+  padding: 20px;
+}
+
+h1, h2, h3, h4, h5 {
+  margin: 0;
+  padding: 5px;
+  text-align: center;
+}
+
+.view {
+  width: max-content;
+  border: #000066 solid 3px;
+  padding: 1px;
+  margin: auto;
+}

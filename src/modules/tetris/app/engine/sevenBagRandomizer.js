@@ -1,4 +1,5 @@
 import Shape from '../../../arcade/view/model/shape';
+import Random from '../../../../classes/random';
 
 const I = new Shape([[0,0,0,0], [1,1,1,1], [0,0,0,0]], 'blue');
 const O = new Shape([[0,0,0,0],[0,1,1,0], [0,1,1,0],[0,0,0,0]], 'yellow');
@@ -13,7 +14,7 @@ export function shuffled7Bag() {
     const result = blocks.map((block) => block.clone());
     
     for(let i = result.length - 1; i > 0; i--) {
-        const j = Math.random() * (i + 1) | 0;
+        const j = new Random().number(i);
         [result[i], result[j]] = [result[j], result[i]];
     }
     

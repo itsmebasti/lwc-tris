@@ -41,11 +41,11 @@ export default class Canvas extends Shape {
         return this.free(x, y, shape) && this.inside(x, y, shape);
     }
     
-    free(x, y, shape) {
+    free(x, y, shape = new Shape([[1]], 'white')) {
         return shape.everyPixel((xOffset, yOffset) => this.emptyAt(x + xOffset, y + yOffset));
     }
     
-    inside(x, y, shape) {
+    inside(x, y, shape = new Shape([[1]], 'white')) {
         const {height, width} = this;
         return shape.everyPixel((xOffset, yOffset) => {
             return y + yOffset >= 0 && y + yOffset < height

@@ -1,5 +1,6 @@
 import Shape from '../../../arcade/view/model/shape';
 import Publisher from '../../../../classes/publisher';
+import GameClock from '../../../../classes/gameClock';
 
 const maxLevel = 15;
 const maxSpeed = 400;
@@ -9,19 +10,17 @@ export default class Engine extends Publisher {
     canvas;
     blockStream;
     current;
-    nextTick;
     state;
+    clock;
     
     constructor(canvas) {
         super('start', 'next', 'change', 'rotate', 'lock', 'tetris', 'gameOver');
         this.canvas = canvas;
-        this.reset();
+        this.clock = new GameClock(() => this.move(0, 1));
+        this.initState();
     }
     
-    reset() {
-        this.stopLoop();
-        delete this.current;
-        this.canvas.clear();
+    initState() {
         this.state = new Proxy({
             score: 0,
             level: 1,
@@ -34,8 +33,16 @@ export default class Engine extends Publisher {
                 this.publish('change', {state: {...state}});
                 return true;
             }
-        })
+        });
+        
         this.publish('change', {state: {...this.state}});
+    }
+    
+    reset() {
+        this.clock.stop();
+        delete this.current;
+        this.canvas.clear();
+        this.initState();
     }
     
     start(blockStream) {
@@ -48,11 +55,11 @@ export default class Engine extends Publisher {
     
     pauseResume() {
         if(this.state.paused) {
-            this.startLoop();
+            this.clock.start(this.speed);
             this.state.paused = false;
         }
         else {
-            this.stopLoop();
+            this.clock.stop();
             this.state.paused = true;
         }
     }
@@ -79,16 +86,16 @@ export default class Engine extends Publisher {
     
     softDrop() {
         if(!this.current || this.state.paused) return;
-        this.stopLoop();
+        this.clock.stop();
         this.move(0, 1);
-        this.startLoop();
+        this.clock.start(this.speed);
     }
     
     hardDrop() {
         if(!this.current || this.state.paused) return;
-        this.stopLoop();
+        this.clock.stop();
         this.move(0, this.canvas.height);
-        this.startLoop();
+        this.clock.start(this.speed);
     }
     
     rotate() {
@@ -144,7 +151,7 @@ export default class Engine extends Publisher {
     
     lockCurrent() {
         delete this.current;
-        this.stopLoop();
+        this.clock.stop();
         this.state.score += 100
         this.publish('lock');
     }
@@ -199,16 +206,6 @@ export default class Engine extends Publisher {
         }
         
         return destination;
-    }
-    
-    startLoop() {
-        if(this.nextTick) throw "already running";
-        this.nextTick = setInterval(() => this.move(0, 1), this.speed);
-    }
-    
-    stopLoop() {
-        clearInterval(this.nextTick);
-        this.nextTick = undefined;
     }
     
     get speed() {
