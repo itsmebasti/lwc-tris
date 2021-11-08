@@ -5,7 +5,7 @@ import { RIGHT, LEFT, UP, DOWN } from '../../../classes/directions';
 import Engine from './engine/engine';
 import cookies from '../../../classes/cookie';
 
-const COOKIE = cookies('tetris');
+const COOKIE = cookies('snake');
 
 export default class App extends LightningElement {
     @track canvas = new Canvas({width: 20, height: 20});

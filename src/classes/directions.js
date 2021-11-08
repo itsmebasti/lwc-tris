@@ -12,9 +12,9 @@ class DirectionQueue {
     last;
     queue = [];
     
-    reset() {
+    start(direction) {
         this.queue.length = 0;
-        this.last = DOWN;
+        this.last = direction;
     }
     
     add(direction) {

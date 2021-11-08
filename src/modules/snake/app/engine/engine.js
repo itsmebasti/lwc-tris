@@ -1,4 +1,4 @@
-import { DirectionQueue } from '../../../../classes/directions';
+import { DirectionQueue, DOWN } from '../../../../classes/directions';
 import GameClock from '../../../../classes/gameClock';
 import Random from '../../../../classes/random';
 import Publisher from '../../../../classes/publisher';
@@ -20,7 +20,6 @@ export default class Engine extends Publisher  {
     reset() {
         this.clock.stop();
         this.canvas.clear();
-        this.directions.reset();
         delete this.snake;
         delete this.snack;
     }
@@ -34,6 +33,7 @@ export default class Engine extends Publisher  {
         this.canvas.paint(x, 3, 'orange');
     
         this.drawNextSnack();
+        this.directions.start(DOWN);
         this.clock.start(speed);
     }
     
