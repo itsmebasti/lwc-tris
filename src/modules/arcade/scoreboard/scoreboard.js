@@ -1,6 +1,6 @@
 import { LightningElement, track, api } from 'lwc';
 import Canvas from '../view/model/canvas';
-import { numbers } from './numbers';
+import numbers from './numbers';
 
 export default class Scoreboard extends LightningElement {
     @api scale;

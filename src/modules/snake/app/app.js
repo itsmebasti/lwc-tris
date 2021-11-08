@@ -33,6 +33,10 @@ export default class App extends LightningElement {
         this.engine.reset();
     }
     
+    renderedCallback() {
+        this.template.querySelector('.main').focus();
+    }
+    
     reset() {
         this.engine.reset();
         this.score = 0;
