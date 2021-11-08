@@ -36,7 +36,7 @@ export default class App extends LightningElement {
     reset() {
         this.engine.reset();
         this.score = 0;
-        this.snacks = 4;
+        this.length = 4;
     }
     
     updateSpeed({target: {value}}) {
