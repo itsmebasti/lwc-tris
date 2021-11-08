@@ -13,7 +13,7 @@ export default class App extends LightningElement {
     keyListener = new KeyListener(15, 250);
     speed = COOKIE.speed ?? 250;
     score = 0;
-    snacks = 0;
+    length = 4;
     
     connectedCallback() {
         this.keyListener.listen({
@@ -25,7 +25,7 @@ export default class App extends LightningElement {
         });
         
         this.engine.on('gameOver', () => this.toast('GAME OVER'));
-        this.engine.on('snack', ({ value }) => {this.score += value - this.speed; this.snacks += 1});
+        this.engine.on('snack', ({ value }) => {this.score += value - this.speed; this.length += 1});
     }
     
     disconnectedCallback() {
@@ -36,7 +36,7 @@ export default class App extends LightningElement {
     reset() {
         this.engine.reset();
         this.score = 0;
-        this.snacks = 0;
+        this.snacks = 4;
     }
     
     updateSpeed({target: {value}}) {
