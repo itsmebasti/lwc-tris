@@ -11,7 +11,7 @@ export default class App extends LightningElement {
     @track canvas = new Canvas({width: 20, height: 20});
     engine = new Engine(this.canvas);
     keyListener = new KeyListener(15, 250);
-    speed = COOKIE.speed ?? 250;
+    speed = COOKIE.speed ?? 75;
     score = 0;
     length = 4;
     
@@ -50,14 +50,14 @@ export default class App extends LightningElement {
     }
     
     get modes() {
-        return [
-            { name: 'Beginner', value: 250, selected: (this.speed === 250) },
-            { name: 'Normal', value: 200, selected: (this.speed === 200) },
-            { name: 'Advanced', value: 150, selected: (this.speed === 150) },
-            { name: 'Professional', value: 100, selected: (this.speed === 100) },
-            { name: 'Godlike', value: 75, selected: (this.speed === 75) },
-            { name: 'Impossible', value: 50, selected: (this.speed === 50) },
-        ];
+        const speed = this.speed;
+        return [{ name: 'Beginner', value: 250},
+                { name: 'Normal', value: 200},
+                { name: 'Advanced', value: 150},
+                { name: 'Professional', value: 100},
+                { name: 'Godlike', value: 75},
+                { name: 'Impossible', value: 50}]
+            .map((mode) => ({...mode, get selected() {return (this.value === speed)}}));
     }
     
     toast = (errorOrMessage) => {
