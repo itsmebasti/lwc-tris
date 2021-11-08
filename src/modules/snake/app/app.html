@@ -1,12 +1,25 @@
 <template>
     <div class="main">
-        <arcade-toast background="#303030"></arcade-toast>
+        <arcade-toast background="red"></arcade-toast>
         
         <div class="game">
             <h2>SNAKE v0.1</h2>
             <div class="screen view">
-                <arcade-view canvas={canvas} scale="20" background="black"  border="1px solid #000066">
-                </arcade-view>
+                <arcade-view canvas={canvas} scale="20" background="black"  border="1px solid #000066"></arcade-view>
+            </div>
+        </div>
+        <div class="details">
+            <label for="select">speed: </label>
+            <select id="select" onchange={updateSpeed}>
+                <option for:each={modes} for:item="mode" key={mode.name} value={mode.value} selected={mode.selected}>{mode.name}</option>
+            </select>
+            <h2>SCORE</h2>
+            <div class="view">
+                <arcade-scoreboard digits="7" scale="5" score={score}></arcade-scoreboard>
+            </div>
+            <h4>Snacks</h4>
+            <div class="view">
+                <arcade-scoreboard digits="7" scale="5" score={snacks}></arcade-scoreboard>
             </div>
         </div>
     </div>

@@ -3,8 +3,6 @@ import GameClock from '../../../../classes/gameClock';
 import Random from '../../../../classes/random';
 import Publisher from '../../../../classes/publisher';
 
-const speed = 200;
-
 export default class Engine extends Publisher  {
     canvas;
     directions;
@@ -12,7 +10,7 @@ export default class Engine extends Publisher  {
     snack;
     
     constructor(canvas) {
-        super('gameOver');
+        super('gameOver', 'snack');
         this.canvas = canvas;
         this.clock = new GameClock(() => this.move());
         this.directions = new DirectionQueue();
@@ -27,7 +25,7 @@ export default class Engine extends Publisher  {
         delete this.snack;
     }
     
-    start() {
+    start(speed) {
         const x = this.canvas.center;
         this.snake = [{x, y:0}, {x, y:1}, {x, y:2}, {x, y:3}];
         this.canvas.paint(x, 0, 'white');
@@ -52,6 +50,7 @@ export default class Engine extends Publisher  {
         if(newHead.x === this.snack.x && newHead.y === this.snack.y) {
             this.canvas.paint(this.snack.x, this.snack.y);
             delete this.snack;
+            this.publish('snack', {value: 300});
         }
         else {
             const tail = this.snake.shift();

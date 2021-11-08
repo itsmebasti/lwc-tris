@@ -48,12 +48,21 @@
             <br>
             <br>
             <h2>Next</h2>
-            <div class="next view">
+            <div class="view">
                 <arcade-view canvas={nextView} scale="20" background="black" border="1px solid #000066"></arcade-view>
             </div>
-            <h4>lines {state.lines}</h4>
-            <h4>level {state.level}</h4>
-            <h4>score<br>{state.score}</h4>
+            <h2>Score</h2>
+            <div class="view">
+                <arcade-scoreboard digits="6" scale="5" score={state.score}></arcade-scoreboard>
+            </div>
+            <h4>lines</h4>
+            <div class="view">
+                <arcade-scoreboard digits="6" scale="5" score={state.lines}></arcade-scoreboard>
+            </div>
+            <h4>level</h4>
+            <div class="view">
+                <arcade-scoreboard digits="6" scale="5" score={state.level}></arcade-scoreboard>
+            </div>
         </div>
         <tetris-competitors session={session}></tetris-competitors>
     </div>

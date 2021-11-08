@@ -3,7 +3,6 @@
   border-radius: 25px;
   background-color: #00a1e0;
   display: inline-flex;
-  max-width: 800px;
   position: relative;
 }
 
@@ -22,4 +21,9 @@ h1, h2, h3, h4, h5 {
   border: #000066 solid 3px;
   padding: 1px;
   margin: auto;
+}
+
+select {
+  margin-top: 5px;
+  width: 100px;
 }

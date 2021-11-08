@@ -8,17 +8,14 @@
             </svg>
         </a>
         
-        <select onchange={selectGame}>
-            <option value="none">please select a game</option>
-            <option value="tetris">LWC-tris</option>
-            <option value="snake" selected>Snake</option>
+        <label for="select">choose a game: </label>
+        <select id="select" onchange={selectGame}>
+            <option for:each={options} for:item="game" key={game.name} value={game.name} selected={game.selected}>{game.name}</option>
         </select>
         
-        <div if:true={games.tetris}>
-            <tetris-app></tetris-app>
-        </div>
-        <div if:true={games.snake}>
-            <snake-app></snake-app>
-        </div>
+        <br>
+        
+        <tetris-app if:true={games.tetris}></tetris-app>
+        <snake-app if:true={games.snake}></snake-app>
     </div>
 </template>

@@ -6,11 +6,13 @@ export default class Lobby extends LightningElement {
         snake: true,
     }
     
-    selectGame({target}) {
-        target.blur();
-        
+    selectGame({target : {value}}) {
         for(const game in this.games) {
-            this.games[game] = (game === target.value);
+            this.games[game] = (game === value);
         }
+    }
+    
+    get options() {
+        return Object.keys(this.games).map((name) => ({name, selected: this.games[name]}));
     }
 }
