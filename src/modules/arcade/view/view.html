@@ -1,17 +1,9 @@
 <template>
-    <div class="canvas" style={canvasStyle}>
-        <div class="overlay">
-            <slot name="overlay"></slot>
-        </div>
+    <div class="container">
+        <view-div if:true={view.div} grid={grid} scale={scale} background={background} border={border}></view-div>
+        <view-canvas if:true={view.canvas} grid={grid} scale={scale} background={background} border={border}></view-canvas>
+        <view-checkbox if:true={view.checkbox} grid={grid}></view-checkbox>
         
-        <div for:each={canvas} for:item="row" key={row.y} class="row">
-            <div for:each={row} for:item="pixel" key={pixel.key} class="cell" style={cellBorder}>
-                <div class="pixel"
-                    style={pixel.style}
-                    data-x={pixel.x} data-y={pixel.y}
-                    onclick={dispatchClick}>
-                </div>
-            </div>
-        </div>
+        <slot name="overlay"></slot>
     </div>
 </template>

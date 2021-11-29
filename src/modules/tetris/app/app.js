@@ -1,6 +1,6 @@
 import { LightningElement, track } from 'lwc';
 import Engine from './engine/engine';
-import Canvas from '../../arcade/view/model/canvas';
+import Grid from '../../view/model/grid';
 import AudioPlayer from '../../../classes/audioPlayer';
 import KeyListener from '../../../classes/keyListener';
 import SinglePlayerSession from './sesssion/singlePlayerSession';
@@ -11,10 +11,10 @@ import url from '../../../classes/url';
 const COOKIE = cookies('tetris');
 
 export default class App extends LightningElement {
-    @track canvas = new Canvas({width: 10, height: 20});
-    @track nextView = new Canvas({height: 4, width: 4});
+    @track grid = new Grid({width: 10, height: 20});
+    @track nextView = new Grid({height: 4, width: 4});
     
-    engine = new Engine(this.canvas);
+    engine = new Engine(this.grid);
     state = this.engine.state;
     
     keyListener = new KeyListener(15, 250);
@@ -27,20 +27,26 @@ export default class App extends LightningElement {
     
     constructor() {
         super();
-        this.keyListener.listen({'Enter': this.commitName});
         this.load(MultiPlayerSession);
         this.addEngineHandlers();
     }
     
+    renderedCallback() {
+        if(!this.player) {
+            this.template.querySelector('input').focus();
+            this.keyListener.listen({'Enter': this.commitName});
+        }
+    }
+    
     load(Session) {
         this.engine.reset();
-        this.nextView.clear();
+        this.nextView.reset();
     
         this.session && this.session.disconnect();
         this.session = new Session(url.room);
         this.session.on('start', this.startRound);
-    
-        this.player && this.connect(this.player);
+        
+        this.connect(this.player);
     }
     
     commitName = () => {
@@ -57,7 +63,7 @@ export default class App extends LightningElement {
     }
     
     connect(player) {
-        this.tryToConnect(player)
+        player && this.tryToConnect(player)
             .catch(() => new Promise((resolve) => setTimeout(resolve, 2000))
                 .then(() => this.tryToConnect(player)))
             .catch((error) => {
@@ -68,7 +74,7 @@ export default class App extends LightningElement {
     }
     
     tryToConnect(player) {
-        return this.session.connect(player, this.canvas, this.state)
+        return this.session.connect(player, this.grid, this.state)
             .then(() => {
                 this.player = player;
                 COOKIE.player = player;
@@ -99,8 +105,8 @@ export default class App extends LightningElement {
     }
     
     startRound = (blockStream) => {
-        this.canvas.clear();
-        this.nextView.clear();
+        this.grid.reset();
+        this.nextView.reset();
         
         this.engine.start(blockStream);
     }
@@ -128,10 +134,6 @@ export default class App extends LightningElement {
     toggleMode({target}) {
         target.blur();
         this.load( (target.value === 's') ? SinglePlayerSession : MultiPlayerSession);
-    }
-    
-    renderedCallback() {
-        !this.player && this.template.querySelector('input').focus();
     }
     
     get running() {

@@ -4,6 +4,7 @@
   background-color: #00a1e0;
   display: inline-flex;
   position: relative;
+  outline: none;
 }
 
 .main > div {
@@ -18,7 +19,7 @@ h1, h2, h3, h4, h5 {
 
 .view {
   width: max-content;
-  border: #000066 solid 3px;
+  border: navy solid 3px;
   padding: 1px;
   margin: auto;
 }

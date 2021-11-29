@@ -1,5 +1,5 @@
 import { LightningElement, api, track } from 'lwc';
-import Canvas from '../../arcade/view/model/canvas';
+import Grid from '../../view/model/grid';
 
 export default class Competitors extends LightningElement {
     @track competitors = [];
@@ -18,7 +18,7 @@ export default class Competitors extends LightningElement {
     
     updateCompetitor = (name, {state, canvas}) => {
         const index = this.competitors.findIndex((player) => player.name === name);
-        const newValue = {name, state, canvas: new Canvas({rows: canvas})};
+        const newValue = {name, state, grid: new Grid({rows: canvas})};
         
         if(index === -1) {
             this.competitors.push(newValue);

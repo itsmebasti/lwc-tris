@@ -1,4 +1,4 @@
-import Shape from '../view/model/shape';
+import Shape from '../../view/model/shape';
 
 const _0 = new Shape([
     [1,1,1],

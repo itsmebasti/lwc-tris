@@ -1,6 +1,8 @@
 import Shape from './shape';
 
-export default class Canvas extends Shape {
+let exposedFrame = -1;
+export default class Grid extends Shape {
+    frame = 0;
     
     constructor({ height, width, rows = new Array(height).fill().map(() => new Array(width).fill())}) {
         super(rows);
@@ -20,8 +22,15 @@ export default class Canvas extends Shape {
         });
     }
     
+    paint(x, y, color) {
+        if(this.frame === exposedFrame) {
+            this.frame++;
+        }
+        super.paint(x, y, color, this.frame);
+    }
+    
     set(x, y, shape, color) {
-        this.clear();
+        this.reset();
         this.draw(x, y, shape, color);
     }
     
@@ -33,8 +42,23 @@ export default class Canvas extends Shape {
         );
     }
     
-    clear(x = 0, y = 0, shape = this) {
-        shape.forPixel((xOffset, yOffset) => this.paint(x + xOffset, y + yOffset));
+    reset() {
+        this.frame = 0;
+        exposedFrame = -1;
+        this.forEach((row) => row.forEach(({x, y}) => this.paint(x, y, undefined)));
+    }
+    
+    clear(x, y, shape) {
+        shape.forPixel((xOffset, yOffset) => this.paint(x + xOffset, y + yOffset, undefined));
+    }
+    
+    forChanged(callback) {
+        this.forEach((row) =>
+            row.filter(({frameId}) => frameId === this.frame)
+               .forEach(callback)
+        );
+        
+        exposedFrame = this.frame;
     }
     
     valid(x, y, shape) {

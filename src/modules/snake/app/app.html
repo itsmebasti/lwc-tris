@@ -4,22 +4,42 @@
         
         <div class="game">
             <h2>SNAKE v0.1</h2>
-            <div class="screen view">
-                <arcade-view canvas={canvas} scale="20" background="black"  border="1px solid #000066"></arcade-view>
+            <div class="view">
+                <arcade-view grid={grid} scale="20" background="black" border="navy" type={view}>
+                    <div slot="overlay" if:false={running}>
+                        <h1>[enter]<br>to play</h1>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Key</th><th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr><td>[◄][►][▲][▼]</td><td>move</td></tr>
+                                <tr><td>[enter]</td><td>pause | resume</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </arcade-view>
             </div>
         </div>
         <div class="details">
-            <label for="select">speed: </label>
-            <select id="select" onchange={updateSpeed}>
+            <label for="speed">speed: </label>
+            <select id="speed" onchange={updateSpeed}>
                 <option for:each={modes} for:item="mode" key={mode.name} value={mode.value} selected={mode.selected}>{mode.name}</option>
+            </select>
+            <br />
+            <label for="view">view: </label>
+            <select id="view" onchange={updateView}>
+                <option for:each={views} for:item="view" key={view.name} value={view.name} selected={view.selected}>{view.name}</option>
             </select>
             <h2>SCORE</h2>
             <div class="view">
-                <arcade-scoreboard digits="7" scale="5" score={score}></arcade-scoreboard>
+                <view-score digits="7" scale="5" score={score}></view-score>
             </div>
             <h4>Length</h4>
             <div class="view">
-                <arcade-scoreboard digits="7" scale="5" score={length}></arcade-scoreboard>
+                <view-score digits="7" scale="5" score={length}></view-score>
             </div>
         </div>
     </div>

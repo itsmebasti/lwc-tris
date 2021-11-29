@@ -10,21 +10,22 @@ export default class Engine extends Publisher  {
     snack;
     
     constructor(canvas) {
-        super('gameOver', 'snack');
+        super('gameOver', 'snack', 'start');
         this.canvas = canvas;
         this.clock = new GameClock(() => this.move());
         this.directions = new DirectionQueue();
-        this.reset();
     }
     
     reset() {
         this.clock.stop();
-        this.canvas.clear();
+        this.canvas.reset();
         delete this.snake;
         delete this.snack;
     }
     
     start(speed) {
+        this.reset();
+        
         const x = this.canvas.center;
         this.snake = [{x, y:0}, {x, y:1}, {x, y:2}, {x, y:3}];
         this.canvas.paint(x, 0, 'white');
@@ -35,6 +36,7 @@ export default class Engine extends Publisher  {
         this.drawNextSnack();
         this.directions.start(DOWN);
         this.clock.start(speed);
+        this.publish('start')
     }
     
     next(direction) {
@@ -83,9 +85,5 @@ export default class Engine extends Publisher  {
     randomPixel() {
         return { x: new Random().number(this.canvas.width-1),
                  y: new Random().number(this.canvas.height-1)};
-    }
-    
-    get running() {
-        return !!this.snake;
     }
 }

@@ -1,25 +1,28 @@
-import { LightningElement, api } from "lwc";
+import { LightningElement, api, track } from 'lwc';
 
 export default class View extends LightningElement {
-    @api canvas = [];
+    @api grid = [];
     @api scale;
     @api background;
     @api border;
     
-    get cellBorder() {
-        return 'border: ' + this.border;
+    @track view = {
+        div: false,
+        canvas: true,
+        checkbox: false,
     }
     
-    get canvasStyle() {
-        return `
-        width: ${this.canvas.width * this.scale}px;
-        height: ${this.canvas.height * this.scale}px;
-        background: ${this.background}`;
+    @api set type(value) {
+        for(const view in this.view) {
+            this.view[view] = (view === value);
+        }
     }
     
-    dispatchClick({target: {dataset: {x, y}}}) {
-        x = Number(x);
-        y = Number(y);
-        this.dispatchEvent(new CustomEvent('pixelclick', {detail: {x, y}}))
+    get type() {
+        for(const view in this.view) {
+            if(this.view[view]) {
+                return view;
+            }
+        }
     }
 }

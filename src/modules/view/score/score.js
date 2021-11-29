@@ -1,13 +1,13 @@
 import { LightningElement, track, api } from 'lwc';
-import Canvas from '../view/model/canvas';
-import numbers from './numbers';
+import Grid from '../model/grid';
+import numbers from '../model/numbers';
 
-export default class Scoreboard extends LightningElement {
+export default class Score extends LightningElement {
     @api scale;
     @track board;
     
     @api set digits(value) {
-        this.board = new Canvas({ width: value * 4 - 1, height: 5 });
+        this.board = new Grid({ width: value * 4 - 1, height: 5 });
         this.score = 0;
     } get digits() { }
     
@@ -16,7 +16,7 @@ export default class Scoreboard extends LightningElement {
             return;
         }
         
-        this.board.clear();
+        this.board.reset();
         
         value.toString().split('')
              .reverse()

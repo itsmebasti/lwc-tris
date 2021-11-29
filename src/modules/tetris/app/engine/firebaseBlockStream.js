@@ -1,6 +1,6 @@
 import Stream from '../../../../classes/stream';
 import { shuffled7Bag } from './sevenBagRandomizer';
-import Shape from '../../../arcade/view/model/shape';
+import Shape from '../../../view/model/shape';
 
 export default class FirebaseBlockStream extends Stream {
     constructor(session, initialBlocks) {

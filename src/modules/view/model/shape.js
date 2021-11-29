@@ -33,9 +33,9 @@ export default class Shape extends Array {
         return this.pixel(x, y)?.empty;
     }
     
-    paint(x, y, color) {
+    paint(x, y, color, frameId) {
         const pixel = this.pixel(x, y);
-        pixel && pixel.paint(color);
+        pixel && pixel.paint(color, frameId);
     }
     
     pixel(x, y) {
@@ -82,8 +82,9 @@ function trackablePixel(x, y, value = {}, override) {
     return {
         x, y, key: y+'_'+x,
         
-        paint(color) {
+        paint(color, frameId = 0) {
             this.color = color;
+            this.frameId = frameId;
             this.style = color ? 'background-color: ' + color : undefined;
             return this;
         },

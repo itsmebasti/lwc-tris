@@ -1,4 +1,4 @@
-import Shape from '../../../arcade/view/model/shape';
+import Shape from '../../../view/model/shape';
 import Publisher from '../../../../classes/publisher';
 import GameClock from '../../../../classes/gameClock';
 
@@ -41,7 +41,7 @@ export default class Engine extends Publisher {
     reset() {
         this.clock.stop();
         delete this.current;
-        this.canvas.clear();
+        this.canvas.reset();
         this.initState();
     }
     
