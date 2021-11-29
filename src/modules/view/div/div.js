@@ -6,15 +6,15 @@ export default class Div extends LightningElement {
     @api background;
     @api border;
     
-    get cellBorder() {
-        return this.border ? 'border: 1px solid ' + this.border : '';
-    }
-    
-    get canvasStyle() {
+    get style() {
         return `
         width: ${this.grid.width * this.scale}px;
         height: ${this.grid.height * this.scale}px;
         background: ${this.background}`;
+    }
+    
+    get cellBorder() {
+        return this.border ? 'border: 1px solid ' + this.border : '';
     }
     
     dispatchClick({target: {dataset: {x, y}}}) {

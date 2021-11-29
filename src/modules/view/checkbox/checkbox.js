@@ -1,5 +1,5 @@
 import { LightningElement, api } from "lwc";
 
-export default class Grid extends LightningElement {
+export default class Checkbox extends LightningElement {
     @api grid = [];
 }

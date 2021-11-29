@@ -1,9 +1,5 @@
 <template>
-    <div class="overlay">
-        <slot name="overlay"></slot>
-    </div>
-    
-    <canvas width={width} height={height} style={style}>
-        <template if:true={canvas}>{drawChanges}</template>
+    <canvas>
+        {changeHandlerWorkaround}
     </canvas>
 </template>
