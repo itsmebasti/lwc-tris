@@ -24,13 +24,11 @@
             </div>
         </div>
         <div class="details">
-            <label for="speed">speed: </label>
-            <select id="speed" onchange={updateSpeed}>
+            <select onchange={updateSpeed}>
                 <option for:each={modes} for:item="mode" key={mode.name} value={mode.value} selected={mode.selected}>{mode.name}</option>
             </select>
             <br />
-            <label for="view">view: </label>
-            <select id="view" onchange={updateView}>
+            <select onchange={updateView}>
                 <option for:each={views} for:item="view" key={view.name} value={view.name} selected={view.selected}>{view.name}</option>
             </select>
             <h2>SCORE</h2>

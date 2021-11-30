@@ -10,6 +10,11 @@ export default class View extends LightningElement {
         div: false,
         canvas: true,
         checkbox: false,
+        pixelCanvas: false,
+    }
+    
+    @api types() {
+        return Object.keys(this.view);
     }
     
     @api set type(value) {

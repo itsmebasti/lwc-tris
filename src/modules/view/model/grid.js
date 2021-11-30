@@ -70,10 +70,9 @@ export default class Grid extends Shape {
     }
     
     inside(x, y, shape = new Shape([[1]], 'white')) {
-        const {height, width} = this;
         return shape.everyPixel((xOffset, yOffset) => {
-            return y + yOffset >= 0 && y + yOffset < height
-                && x + xOffset >= 0 && x + xOffset < width;
+            return y + yOffset >= 0 && y + yOffset < this.height
+                && x + xOffset >= 0 && x + xOffset < this.width;
         });
     }
     

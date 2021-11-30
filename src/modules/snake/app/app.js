@@ -16,9 +16,12 @@ export default class App extends LightningElement {
     score = 0;
     length = 4;
     view = 'canvas';
+    views;
     
     renderedCallback() {
         this.template.querySelector('.main').focus();
+        this.views = this.views ?? this.template.querySelector('arcade-view').types()
+            .map((name) => ({name, selected: name === this.view}));
     }
     
     connectedCallback() {
@@ -55,11 +58,6 @@ export default class App extends LightningElement {
     updateView({target: {value}}) {
         this.engine.reset();
         this.view = value;
-    }
-    
-    get views() {
-        return ['div', 'canvas', 'checkbox']
-            .map((view) => ({name: view, selected: view === this.view}))
     }
     
     get modes() {
