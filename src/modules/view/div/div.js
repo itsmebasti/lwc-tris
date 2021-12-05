@@ -14,7 +14,7 @@ export default class Div extends LightningElement {
     }
     
     get cellBorder() {
-        return this.border ? 'border: 1px solid ' + this.border : '';
+        return this.border && 'border: 1px solid ' + this.border;
     }
     
     dispatchClick({target: {dataset: {x, y}}}) {

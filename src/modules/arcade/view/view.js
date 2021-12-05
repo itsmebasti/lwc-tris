@@ -11,6 +11,7 @@ export default class View extends LightningElement {
         canvas: true,
         checkbox: false,
         pixelCanvas: false,
+        pixelSvg: false,
     }
     
     @api types() {

@@ -11,14 +11,19 @@ export default class Canvas extends LightningElement {
     renderedCallback() {
         if(!this.canvas) {
             const element = this.template.querySelector('canvas');
-            element.width = this.grid.width * this.scale;
-            element.height = this.grid.height * this.scale;
+            const ratio = window.devicePixelRatio || 1;
+            this.canvas = element.getContext("2d");
             
-            element.style.imageRendering = 'pixelated';
+            element.width = Math.floor(this.grid.width * this.scale * ratio);
+            element.height = Math.floor(this.grid.height * this.scale * ratio);
+            element.style.width = this.grid.width * this.scale + 'px';
+            element.style.height = this.grid.height * this.scale + 'px';
+            this.canvas.scale(ratio, ratio);
+            
             element.style.display = 'block';
             element.style.backgroundColor = this.background;
+            element.style.imageRendering = 'pixelated';
             
-            this.canvas = element.getContext("2d");
             this.canvas.strokeStyle = this.border;
             this.canvas.lineWidth = 2;
         }
