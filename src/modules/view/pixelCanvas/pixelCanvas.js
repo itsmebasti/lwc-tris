@@ -6,6 +6,7 @@ export default class PixelCanvas extends LightningElement {
     @api background;
     
     canvas;
+    lastChange = 0;
     
     renderedCallback() {
         if(!this.canvas) {
@@ -24,10 +25,14 @@ export default class PixelCanvas extends LightningElement {
     }
     
     get changeHandlerWorkaround() {
-        this.canvas && this.grid.forChanged(({x, y, color}) => {
-            (this.canvas.fillStyle = color)
-                ? this.canvas.fillRect(x, y, 1, 1)
-                : this.canvas.clearRect(x, y, 1, 1);
-        });
+        if(this.canvas) {
+            this.grid.changesSince(this.lastChange).forEach(({ x, y, color }) => {
+                (this.canvas.fillStyle = color)
+                    ? this.canvas.fillRect(x, y, 1, 1)
+                    : this.canvas.clearRect(x, y, 1, 1);
+            });
+    
+            this.lastChange = this.grid.changeId;
+        }
     }
 }

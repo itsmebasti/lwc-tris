@@ -9,6 +9,6 @@ export default class FirebaseBlockStream extends Stream {
         const blockStream = session.child('blocks').orderByKey().startAfter('6');
         session.bind(blockStream, 'child_added', (data) => this.write(new Shape(data.val())));
         
-        super.queryDataHook = () => shuffled7Bag().forEach((block) => session.child('blocks').push(session.json(block)));
+        super.queryDataHook = () => shuffled7Bag().forEach((block) => session.child('blocks').push(session.jsonProof(block)));
     }
 }

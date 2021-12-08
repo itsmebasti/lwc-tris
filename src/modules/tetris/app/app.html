@@ -1,5 +1,5 @@
 <template>
-    <div class="main">
+    <div class="main" tabindex="0">
         <arcade-toast background="#303030"></arcade-toast>
         
         <div class="game">
@@ -53,15 +53,15 @@
             </div>
             <h2>Score</h2>
             <div class="view">
-                <view-score digits="6" scale="5" score={state.score}></view-score>
+                <arcade-score digits="6" scale="5" score={state.score}></arcade-score>
             </div>
             <h4>lines</h4>
             <div class="view">
-                <view-score digits="6" scale="5" score={state.lines}></view-score>
+                <arcade-score digits="6" scale="5" score={state.lines}></arcade-score>
             </div>
             <h4>level</h4>
             <div class="view">
-                <view-score digits="6" scale="5" score={state.level}></view-score>
+                <arcade-score digits="6" scale="5" score={state.level}></arcade-score>
             </div>
         </div>
         <tetris-competitors session={session}></tetris-competitors>

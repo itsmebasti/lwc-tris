@@ -1,4 +1,5 @@
 import { LightningElement, api, track } from 'lwc';
+import Shape from '../../view/model/shape';
 import Grid from '../../view/model/grid';
 
 export default class Competitors extends LightningElement {
@@ -17,14 +18,14 @@ export default class Competitors extends LightningElement {
     } get session() {}
     
     updateCompetitor = (name, {state, canvas}) => {
-        const index = this.competitors.findIndex((player) => player.name === name);
-        const newValue = {name, state, grid: new Grid({rows: canvas})};
+        const competitor = this.competitors.find((player) => player.name === name);
         
-        if(index === -1) {
-            this.competitors.push(newValue);
+        if(competitor) {
+            competitor.state = state;
+            competitor.grid.set(0, 0, new Shape(canvas), 'grey');
         }
         else {
-            this.competitors[index] = newValue;
+            this.competitors.push({name, state, grid: new Grid({rows: canvas})});
         }
     }
     

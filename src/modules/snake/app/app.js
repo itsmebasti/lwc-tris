@@ -12,16 +12,20 @@ export default class App extends LightningElement {
     engine = new Engine(this.grid);
     keyListener = new KeyListener(15, 250);
     speed = COOKIE.speed ?? 75;
+    view = COOKIE.view ?? 'canvas';
+    
     running = false;
     score = 0;
     length = 4;
-    view = 'canvas';
-    views;
+    viewOptions = [];
     
     renderedCallback() {
         this.template.querySelector('.main').focus();
-        this.views = this.views ?? this.template.querySelector('arcade-view').types()
-            .map((name) => ({name, selected: name === this.view}));
+        
+        if(!this.viewOptions.length) {
+            this.viewOptions = this.template.querySelector('arcade-view').types()
+                             .map((name) => ({name, selected: name === this.view}));
+        }
     }
     
     connectedCallback() {
@@ -30,12 +34,20 @@ export default class App extends LightningElement {
             'ArrowLeft': () => this.engine.next(LEFT),
             'ArrowUp': () => this.engine.next(UP),
             'ArrowDown': () => this.engine.next(DOWN),
+            'd': () => this.engine.next(RIGHT),
+            'a': () => this.engine.next(LEFT),
+            'w': () => this.engine.next(UP),
+            's': () => this.engine.next(DOWN),
+            'D': () => this.engine.next(RIGHT),
+            'A': () => this.engine.next(LEFT),
+            'W': () => this.engine.next(UP),
+            'S': () => this.engine.next(DOWN),
             'Enter': () => this.engine.start(this.speed),
         });
         
         this.engine.on('gameOver', () => (this.running = false, this.toast('GAME OVER')));
-        this.engine.on('snack', ({ value }) => {this.score += value - this.speed; this.length += 1});
-        this.engine.on('start', () => this.running = true);
+        this.engine.on('snack', ({ length }) => {this.score = (length-4) * (300 - this.speed); this.length = length});
+        this.engine.on('start', () => (this.running = true, this.score = 0, this.length = 4));
     }
     
     disconnectedCallback() {
@@ -43,14 +55,8 @@ export default class App extends LightningElement {
         this.engine.reset();
     }
     
-    reset() {
-        this.engine.reset();
-        this.score = 0;
-        this.length = 4;
-    }
-    
     updateSpeed({target: {value}}) {
-        this.reset();
+        this.engine.reset();
         this.speed = Number(value);
         COOKIE.speed = this.speed;
     }
@@ -58,9 +64,10 @@ export default class App extends LightningElement {
     updateView({target: {value}}) {
         this.engine.reset();
         this.view = value;
+        COOKIE.view = this.view;
     }
     
-    get modes() {
+    get modesOptions() {
         const speed = this.speed;
         return [{ name: 'Beginner', value: 250},
                 { name: 'Normal', value: 200},

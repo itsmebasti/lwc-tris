@@ -44,7 +44,7 @@ export default class Session extends Publisher {
            });
     }
     
-    json(value) {
+    jsonProof(value) {
         return JSON.parse(JSON.stringify(value));
     }
     

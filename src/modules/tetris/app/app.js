@@ -32,6 +32,7 @@ export default class App extends LightningElement {
     }
     
     renderedCallback() {
+        this.template.querySelector('.main').focus();
         if(!this.player) {
             this.template.querySelector('input').focus();
             this.keyListener.listen({'Enter': this.commitName});
@@ -40,7 +41,7 @@ export default class App extends LightningElement {
     
     load(Session) {
         this.engine.reset();
-        this.nextView.reset();
+        this.nextView.clear();
     
         this.session && this.session.disconnect();
         this.session = new Session(url.room);
@@ -105,8 +106,8 @@ export default class App extends LightningElement {
     }
     
     startRound = (blockStream) => {
-        this.grid.reset();
-        this.nextView.reset();
+        this.grid.clear();
+        this.nextView.clear();
         
         this.engine.start(blockStream);
     }

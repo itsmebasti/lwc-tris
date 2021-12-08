@@ -7,6 +7,7 @@ export default class Canvas extends LightningElement {
     @api border;
     
     canvas;
+    lastChange = 0;
     
     renderedCallback() {
         if(!this.canvas) {
@@ -30,14 +31,18 @@ export default class Canvas extends LightningElement {
     }
     
     get changeHandlerWorkaround() {
-        this.canvas && this.grid.forChanged(({x, y, color}) => {
-            const s = this.scale;
-            const rect = [x * s, y * s, s, s];
+        if(this.canvas) {
+            this.grid.changesSince(this.lastChange).forEach(({ x, y, color }) => {
+                const s = Number(this.scale);
+                const rect = [x * s, y * s, s, s];
+        
+                (this.canvas.fillStyle = color)
+                    ? this.canvas.fillRect(...rect)
+                    : this.canvas.clearRect(...rect);
+                this.canvas.strokeRect(...rect);
+            });
             
-            (this.canvas.fillStyle = color)
-                ? this.canvas.fillRect(...rect)
-                : this.canvas.clearRect(...rect);
-            this.canvas.strokeRect(...rect);
-        });
+            this.lastChange = this.grid.changeId;
+        }
     }
 }

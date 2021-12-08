@@ -41,7 +41,7 @@ export default class Engine extends Publisher {
     reset() {
         this.clock.stop();
         delete this.current;
-        this.canvas.reset();
+        this.canvas.clear();
         this.initState();
     }
     
@@ -70,7 +70,7 @@ export default class Engine extends Publisher {
     
     insertBlock() {
         const block = this.blockStream.read();
-        const x = this.canvas.center-2;
+        const x = (this.canvas.width/2) - 2 | 0;
         const y = -1;
         
         if(this.canvas.valid(x, y, block)) {
@@ -174,13 +174,12 @@ export default class Engine extends Publisher {
     
     floodEmptyRows() {
         const scope = [...this.canvas].reverse();
-        for(let row of [...this.canvas].reverse()) {
+        for(let row of [...scope]) {
             if(scope.shift().empty) {
-                const nextBlocks = scope.find((pivot) => !pivot.empty);
+                const nextBlocks = scope.find((row) => !row.empty);
                 if(!nextBlocks) break;
     
-                this.canvas.draw(0, row.y, new Shape([nextBlocks]));
-                this.canvas.replace(0, nextBlocks.y, this.row());
+                this.canvas.move(0, nextBlocks.y, new Shape([nextBlocks]), 0, row.y);
             }
         }
     }

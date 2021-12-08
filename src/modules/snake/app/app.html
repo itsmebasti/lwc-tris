@@ -15,7 +15,8 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr><td>[◄][►][▲][▼]</td><td>move</td></tr>
+                                <tr><td>[▲][◄][►][▼]</td><td>move</td></tr>
+                                <tr><td>[W][A][S][D]</td><td>move</td></tr>
                                 <tr><td>[enter]</td><td>start | restart</td></tr>
                             </tbody>
                         </table>
@@ -25,19 +26,19 @@
         </div>
         <div class="details">
             <select onchange={updateSpeed}>
-                <option for:each={modes} for:item="mode" key={mode.name} value={mode.value} selected={mode.selected}>{mode.name}</option>
+                <option for:each={modesOptions} for:item="mode" key={mode.name} value={mode.value} selected={mode.selected}>{mode.name}</option>
             </select>
             <br />
             <select onchange={updateView}>
-                <option for:each={views} for:item="view" key={view.name} value={view.name} selected={view.selected}>{view.name}</option>
+                <option for:each={viewOptions} for:item="view" key={view.name} value={view.name} selected={view.selected}>{view.name}</option>
             </select>
             <h2>SCORE</h2>
             <div class="view">
-                <view-score digits="7" scale="5" score={score}></view-score>
+                <arcade-score digits="7" scale="5" score={score}></arcade-score>
             </div>
             <h4>Length</h4>
             <div class="view">
-                <view-score digits="7" scale="5" score={length}></view-score>
+                <arcade-score digits="7" scale="5" score={length}></arcade-score>
             </div>
         </div>
     </div>

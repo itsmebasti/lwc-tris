@@ -4,6 +4,7 @@
   background-color: #00a1e0;
   display: inline-flex;
   position: relative;
+  outline: none;
 }
 
 .main > div {

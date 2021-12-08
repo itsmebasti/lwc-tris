@@ -18,7 +18,7 @@ export default class Engine extends Publisher  {
     
     reset() {
         this.clock.stop();
-        this.canvas.reset();
+        this.canvas.clear();
         delete this.snake;
         delete this.snack;
     }
@@ -26,7 +26,7 @@ export default class Engine extends Publisher  {
     start(speed) {
         this.reset();
         
-        const x = this.canvas.center;
+        const x = this.canvas.width / 2 | 0;
         this.snake = [{x, y:0}, {x, y:1}, {x, y:2}, {x, y:3}];
         this.canvas.paint(x, 0, 'white');
         this.canvas.paint(x, 1, 'white');
@@ -52,7 +52,7 @@ export default class Engine extends Publisher  {
         if(newHead.x === this.snack.x && newHead.y === this.snack.y) {
             this.canvas.paint(this.snack.x, this.snack.y);
             delete this.snack;
-            this.publish('snack', {value: 300});
+            this.publish('snack', {length: this.snake.length+1});
         }
         else {
             const tail = this.snake.shift();

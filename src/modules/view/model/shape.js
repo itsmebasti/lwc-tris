@@ -1,49 +1,36 @@
 export default class Shape extends Array {
     static get [Symbol.species]() { return Array; }
     
-    constructor(rows, color) {
+    constructor(rows, color = COLOR) {
         super(...rows.map((pixels, y) => new Row(y, pixels, color)));
     }
     
-    clone() {
-        return new Shape(this);
+    get pixels() {
+        return this.flatMap((row) => row);
     }
     
-    forPixel(callback) {
-        this.forEach((row) =>
-            row.forEach(({color, x, y}) => color && callback(x, y))
-        );
+    get colored() {
+        return this.pixels.filter(({color}) => color);
     }
     
-    everyPixel(fulfilled) {
-        return this.every((row) =>
-            row.every(({color, x, y}) => !color || fulfilled(x, y))
-        );
+    get simpleShape() {
+        return this.map((row) => row.map(({color}) => color ? 1 : 0));
     }
     
-    rotated() {
-        const result = this.clone();
-        result.splice(0, Infinity,
-            ...result[0].map((col, i) => result.map(row => row[i]).reverse())
-        );
-        return new Shape(result);
-    }
-    
-    emptyAt(x, y) {
-        return this.pixel(x, y)?.empty;
-    }
-    
-    paint(x, y, color, frameId) {
-        const pixel = this.pixel(x, y);
-        pixel && pixel.paint(color, frameId);
+    get coloredShape() {
+        return this.map((row) => row.map(({color}) => ({color})));
     }
     
     pixel(x, y) {
-        return (this[y]) ? this[y][x] : undefined;
+        return this[y]?.[x];
+    }
+    
+    emptyAt(x, y) {
+        return !this.pixel(x, y)?.color;
     }
     
     get empty() {
-        return this.every(({empty}) => empty);
+        return this.colored.length === 0;
     }
     
     get height() {
@@ -54,8 +41,12 @@ export default class Shape extends Array {
         return this[0]?.length ?? 0;
     }
     
-    print() {
-        console.table(this.map((row) => row.map(({color}) => color)));
+    clone() {
+        return new Shape(this);
+    }
+    
+    rotated() {
+        return new Shape(this[0].map((unused, col) => this.map((row) => row[col]).reverse()));
     }
 }
 
@@ -64,31 +55,22 @@ class Row extends Array {
     y;
     
     constructor(y, row, color) {
-        super(...row.map((value, x) => trackablePixel(x, y, value, color)));
+        super(...row.map((value, x) => ({
+            x, y,
+            key: y+'_'+x,
+            color: (value === 1) ? color : value?.color
+        })));
         this.y = y;
     }
     
-    get empty() {
-        return this.every(((pixel) => pixel.empty));
+    get full() {
+        return this.every((({color}) => color));
     }
     
-    get full() {
-        return this.every(((pixel) => !pixel.empty));
+    get empty() {
+        return this.every((({color}) => !color));
     }
 }
 
-// Note: class instances would not be @tracked by lwc
-function trackablePixel(x, y, value = {}, override) {
-    return {
-        x, y, key: y+'_'+x,
-        
-        paint(color, frameId = 0) {
-            this.color = color;
-            this.frameId = frameId;
-            this.style = color ? 'background-color: ' + color : undefined;
-            return this;
-        },
-        get empty() { return !this.color; }
-    }
-    .paint((value === 1) ? override : value.color);
-}
+export var COLOR = 'placeholder';
+export var PIXEL = new Shape([[{ color: COLOR }]]);

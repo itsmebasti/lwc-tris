@@ -12,14 +12,4 @@ export default class Div extends LightningElement {
         height: ${this.grid.height * this.scale}px;
         background: ${this.background}`;
     }
-    
-    get cellBorder() {
-        return this.border && 'border: 1px solid ' + this.border;
-    }
-    
-    dispatchClick({target: {dataset: {x, y}}}) {
-        x = Number(x);
-        y = Number(y);
-        this.dispatchEvent(new CustomEvent('pixelclick', {detail: {x, y}}))
-    }
 }
