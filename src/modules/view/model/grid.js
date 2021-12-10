@@ -1,4 +1,4 @@
-import Shape, { PIXEL, FILLED, CLEAR } from './shape';
+import Shape, { FILLED, CLEAR, PIXEL } from './shape';
 
 export default class Grid extends Shape {
     changeId = 0;
@@ -15,15 +15,11 @@ export default class Grid extends Shape {
     }
     
     draw(x, y, shape, color) {
-        this.paint(x, y, color, shape.painted);
+        this.paint(x, y, color, shape);
     }
     
     clear(x = 0, y = 0, shape = (arguments.length) ? PIXEL : this) {
-        this.paint(x, y, CLEAR, shape.painted);
-    }
-    
-    replace(x, y, shape, color) {
-        this.paint(x, y, color, shape.pixels);
+        this.paint(x, y, CLEAR, shape);
     }
     
     move(x, y, shape, toX, toY) {
@@ -31,8 +27,8 @@ export default class Grid extends Shape {
         this.draw(toX, toY, shape);
     }
     
-    paint(x, y, override, pixels = PIXEL.pixels) {
-        pixels.forEach(({x: xOffset, y: yOffset, color}) => {
+    paint(x, y, override, shape = PIXEL) {
+        shape.painted.forEach(({x: xOffset, y: yOffset, color}) => {
             const pixel = this.pixel(x+xOffset, y+yOffset);
             
             if(pixel) {

@@ -68,6 +68,6 @@ class Row extends Array {
     }
 }
 
-export var FILLED = 'filled';
-export var CLEAR = 'clear';
+export var FILLED = Symbol();
+export var CLEAR = Symbol();
 export var PIXEL = new Shape([[1]]);
