@@ -50,13 +50,13 @@ export default class Engine extends Publisher  {
         newHead[direction.axis] += direction.value;
         
         if(newHead.x === this.snack.x && newHead.y === this.snack.y) {
-            this.canvas.paint(this.snack.x, this.snack.y);
+            this.canvas.clear(this.snack.x, this.snack.y);
             delete this.snack;
             this.publish('snack', {length: this.snake.length+1});
         }
         else {
             const tail = this.snake.shift();
-            this.canvas.paint(tail.x, tail.y);
+            this.canvas.clear(tail.x, tail.y);
         }
         
         if( !this.canvas.valid(newHead.x, newHead.y)) {

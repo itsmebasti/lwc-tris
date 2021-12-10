@@ -16,7 +16,7 @@ export default class MultiPlayerSession extends Session {
     
     connect(player, canvas, state) {
         return this.cleanupCompetitors()
-            .then(() => this.child(`competitors/${player}`).set({ state, canvas: canvas.simpleShape, joined: Date.now(), connected: Date.now() }))
+            .then(() => this.child(`competitors/${player}`).set({ state, canvas: canvas.toBinaries, joined: Date.now(), connected: Date.now() }))
             .then(() => {
                 this.player = player;
     
@@ -41,13 +41,13 @@ export default class MultiPlayerSession extends Session {
                    .then((host) => this.assert(this.player === host, host + ' is your current Host'))
                    .then(() => this.queryPlaying())
                    .then((players) => this.assert(players.length === 0, this.stillPlayingString(players)))
-                   .then(() => this.child('blocks').set(shuffled7Bag().coloredShape))
+                   .then(() => this.child('blocks').set(this.jsonProof(shuffled7Bag())))
                    .then(() => 'Good Luck!');
     }
     
     update({ state, canvas, connected, joined }) {
         return this.child(`competitors/${this.player}`)
-                   .update(this.jsonProof({ state, canvas: canvas?.simpleShape, connected, joined }))
+                   .update(this.jsonProof({ state, canvas: canvas?.toBinaries, connected, joined }))
             .then(() => {
                 const {playing, score} = state || {};
                 if(!playing && score) {

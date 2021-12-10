@@ -1,7 +1,7 @@
 export default class Shape extends Array {
     static get [Symbol.species]() { return Array; }
     
-    constructor(rows, color = COLOR) {
+    constructor(rows, color = FILLED) {
         super(...rows.map((pixels, y) => new Row(y, pixels, color)));
     }
     
@@ -9,16 +9,12 @@ export default class Shape extends Array {
         return this.flatMap((row) => row);
     }
     
-    get colored() {
+    get painted() {
         return this.pixels.filter(({color}) => color);
     }
     
-    get simpleShape() {
+    get toBinaries() {
         return this.map((row) => row.map(({color}) => color ? 1 : 0));
-    }
-    
-    get coloredShape() {
-        return this.map((row) => row.map(({color}) => ({color})));
     }
     
     pixel(x, y) {
@@ -30,7 +26,7 @@ export default class Shape extends Array {
     }
     
     get empty() {
-        return this.colored.length === 0;
+        return this.painted.length === 0;
     }
     
     get height() {
@@ -41,8 +37,8 @@ export default class Shape extends Array {
         return this[0]?.length ?? 0;
     }
     
-    clone() {
-        return new Shape(this);
+    clone(color) {
+        return (color) ? new Shape(this.toBinaries, color) : new Shape(this);
     }
     
     rotated() {
@@ -72,5 +68,6 @@ class Row extends Array {
     }
 }
 
-export var COLOR = 'placeholder';
-export var PIXEL = new Shape([[{ color: COLOR }]]);
+export var FILLED = 'filled';
+export var CLEAR = 'clear';
+export var PIXEL = new Shape([[1]]);

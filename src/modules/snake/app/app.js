@@ -8,7 +8,7 @@ import cookies from '../../../classes/cookie';
 const COOKIE = cookies('snake');
 
 export default class App extends LightningElement {
-    @track grid = new Grid({width: 20, height: 20});
+    @track grid = new Grid(20, 20);
     engine = new Engine(this.grid);
     keyListener = new KeyListener(15, 250);
     speed = COOKIE.speed ?? 75;

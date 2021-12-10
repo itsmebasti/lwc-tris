@@ -18,15 +18,16 @@ export default class Competitors extends LightningElement {
     } get session() {}
     
     updateCompetitor = (name, {state, canvas}) => {
-        const competitor = this.competitors.find((player) => player.name === name);
+        const shape = new Shape(canvas);
+        let competitor = this.competitors.find((player) => player.name === name);
         
-        if(competitor) {
-            competitor.state = state;
-            competitor.grid.set(0, 0, new Shape(canvas), 'grey');
+        if(!competitor) {
+            competitor = {name, grid: new Grid(shape.width, shape.height)};
+            this.competitors.push(competitor);
         }
-        else {
-            this.competitors.push({name, state, grid: new Grid({rows: canvas})});
-        }
+        
+        competitor.state = state;
+        competitor.grid.set(0, 0, shape, 'grey');
     }
     
     removeCompetitor = (removed) => {

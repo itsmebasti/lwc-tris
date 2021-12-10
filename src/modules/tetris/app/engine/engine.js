@@ -1,4 +1,4 @@
-import Shape from '../../../view/model/shape';
+import Shape, { CLEAR } from '../../../view/model/shape';
 import Publisher from '../../../../classes/publisher';
 import GameClock from '../../../../classes/gameClock';
 
@@ -71,16 +71,16 @@ export default class Engine extends Publisher {
     insertBlock() {
         const block = this.blockStream.read();
         const x = (this.canvas.width/2) - 2 | 0;
-        const y = -1;
+        const y = 0;
         
         if(this.canvas.valid(x, y, block)) {
             this.current = {x, y, block};
-            this.softDrop();
+            this.show();
             this.publish('next');
+            this.clock.start(this.speed);
         }
         else {
-            this.canvas.draw(x, y, block, 'grey');
-            this.gameOver();
+            this.gameOver(x, y, block);
         }
     }
     
@@ -167,7 +167,7 @@ export default class Engine extends Publisher {
             
             const coords = tetris.map(({y}) => ({ x: 0, y }));
             
-            await this.canvas.animate(coords, this.speed, 5, [this.row(), this.row('grey')])
+            await this.canvas.animate(coords, this.speed, 5, [this.row(CLEAR), this.row('grey')])
                       .then(() => this.floodEmptyRows());
         }
     }
@@ -188,10 +188,12 @@ export default class Engine extends Publisher {
         return new Shape([new Array(this.canvas.width).fill({color})]);
     }
     
-    gameOver() {
-        this.lockCurrent();
-        this.state.playing = false;
-        this.publish('gameOver');
+    gameOver(x, y, block) {
+        this.canvas.animate([{x, y}], 1000, 11, [block.clone('grey'), block.clone(CLEAR)])
+            .then(() => {
+                this.state.playing = false;
+                this.publish('gameOver');
+            });
     }
     
     lastPossible(start, destination, valid) {

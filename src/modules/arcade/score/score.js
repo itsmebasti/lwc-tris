@@ -7,7 +7,7 @@ export default class Score extends LightningElement {
     @track board;
     
     @api set digits(value) {
-        this.board = new Grid({ width: value * 4 - 1, height: 5 });
+        this.board = new Grid(value * 4 - 1, 5);
         this.score = 0;
     } get digits() {}
     
