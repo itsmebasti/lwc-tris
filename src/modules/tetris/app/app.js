@@ -11,7 +11,7 @@ import url from '../../../classes/url';
 const COOKIE = cookies('tetris');
 
 export default class App extends LightningElement {
-    @track grid = new Grid(20, 20);
+    @track grid = new Grid(10, 20);
     @track nextView = new Grid(4);
     
     engine = new Engine(this.grid);
