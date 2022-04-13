@@ -16,7 +16,7 @@ export default class MultiPlayerSession extends Session {
     
     connect(player, canvas, state) {
         return this.cleanupCompetitors()
-            .then(() => this.child(`competitors/${player}`).set({ state, canvas: canvas.toBinaries, joined: Date.now(), connected: Date.now() }))
+            .then(() => this.child(`competitors/${player}`).set({ state, canvas: canvas.binaries, joined: Date.now(), connected: Date.now() }))
             .then(() => {
                 this.player = player;
     
@@ -47,7 +47,7 @@ export default class MultiPlayerSession extends Session {
     
     update({ state, canvas, connected, joined }) {
         return this.child(`competitors/${this.player}`)
-                   .update(this.jsonProof({ state, canvas: canvas?.toBinaries, connected, joined }))
+                   .update(this.jsonProof({ state, canvas: canvas?.binaries, connected, joined }))
             .then(() => {
                 const {playing, score} = state || {};
                 if(!playing && score) {

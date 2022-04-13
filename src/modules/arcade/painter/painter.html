@@ -1,0 +1,22 @@
+<template>
+    Shape Painter 0.5
+    <div class="main">
+        <view-pixel-canvas grid={grid} scale={scale} background={background}
+                           onmousedown={down}
+                           onmouseup={up}
+                           onmousemove={stroke}></view-pixel-canvas>
+        
+        <div class="actions">
+            <button onclick={reset}>reset</button>
+            <arcade-color-picker label="Color" selected={color} onselect={selectColor}></arcade-color-picker>
+            <arcade-color-picker label="Background" selected={background} onselect={selectBackground}></arcade-color-picker>
+        </div>
+    </div>
+    <br>
+    Result:
+    <div class="result">
+        <view-pixel-canvas grid={minified} scale={scale} background={background}></view-pixel-canvas>
+        Full: <textarea>{json}</textarea>
+        Binary: <textarea>{binaries}</textarea>
+    </div>
+</template>

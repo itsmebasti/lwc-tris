@@ -13,8 +13,35 @@ export default class Shape extends Array {
         return this.pixels.filter(({color}) => color);
     }
     
-    get toBinaries() {
+    get binaries() {
         return this.map((row) => row.map(({color}) => color ? 1 : 0));
+    }
+    
+    get minified() {
+        let firstX = this.width-1;
+        let lastX = 0;
+        let firstY = this.height-1;
+        let lastY = 0;
+        
+        this.painted.forEach(({ x, y }) => {
+            firstX = Math.min(firstX, x);
+            lastX = Math.max(lastX, x);
+            firstY = Math.min(firstY, y);
+            lastY = Math.max(lastY, y);
+        });
+        
+        return this.intersection(firstX, firstY, lastX, lastY);
+    }
+    
+    intersection(xStart, yStart, xEnd, yEnd) {
+        const width = xEnd - xStart + 1;
+        const height = yEnd - yStart + 1;
+        
+        const result = new Array(height).fill().map(() => new Array(width).fill(0));
+        
+        this.painted.forEach(({ x, y, color }) => result[y-yStart][x-xStart] = {color});
+        
+        return result;
     }
     
     pixel(x, y) {
@@ -38,7 +65,7 @@ export default class Shape extends Array {
     }
     
     clone(color) {
-        return (color) ? new Shape(this.toBinaries, color) : new Shape(this);
+        return (color) ? new Shape(this.binaries, color) : new Shape(this);
     }
     
     rotated() {

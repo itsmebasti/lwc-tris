@@ -3,8 +3,8 @@ import Shape, { FILLED, CLEAR, PIXEL } from './shape';
 export default class Grid extends Shape {
     changeId = 0;
     
-    constructor(width, height) {
-        super(new Array(height).fill().map(() => new Array(width).fill()));
+    constructor(width, height = width) {
+        super(new Array(height).fill().map(() => new Array(width).fill(0)));
         
         this.pixels.forEach((pixel) => pixel.changeId = ++this.changeId);
     }

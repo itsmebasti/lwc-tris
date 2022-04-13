@@ -2,7 +2,7 @@ import { LightningElement, api } from "lwc";
 
 export default class Div extends LightningElement {
     @api grid = [];
-    @api scale;
+    @api scale = 1;
     @api background;
     @api border;
     

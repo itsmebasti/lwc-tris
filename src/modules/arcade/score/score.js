@@ -3,7 +3,7 @@ import Grid from '../../view/model/grid';
 import numbers from '../../view/model/numbers';
 
 export default class Score extends LightningElement {
-    @api scale;
+    @api scale = 1;
     @track board;
     
     @api set digits(value) {

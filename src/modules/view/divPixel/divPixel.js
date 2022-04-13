@@ -1,7 +1,7 @@
 import { LightningElement, api } from "lwc";
 
 export default class DivPixel extends LightningElement {
-    @api scale;
+    @api scale = 1;
     @api border;
     @api color;
     

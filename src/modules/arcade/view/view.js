@@ -2,7 +2,7 @@ import { LightningElement, api, track } from 'lwc';
 
 export default class View extends LightningElement {
     @api grid = [];
-    @api scale;
+    @api scale = 1;
     @api background;
     @api border;
     

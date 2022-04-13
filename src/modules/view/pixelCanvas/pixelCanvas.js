@@ -1,8 +1,8 @@
 import { LightningElement, api } from "lwc";
 
 export default class PixelCanvas extends LightningElement {
-    @api grid = [];
-    @api scale;
+    _grid = [];
+    @api scale = 1;
     @api background;
     
     canvas;
@@ -10,7 +10,28 @@ export default class PixelCanvas extends LightningElement {
     
     renderedCallback() {
         if(!this.canvas) {
-            const element = this.template.querySelector('canvas');
+            this.initCanvas();
+        }
+    }
+    
+    @api set grid(value) {
+        this._grid = value;
+        this.initCanvas();
+    }
+    
+    get grid() {
+        return this._grid;
+    }
+    
+    get changeHandlerWorkaround() {
+        if(this.canvas) {
+            this.updateCanvas();
+        }
+    }
+    
+    initCanvas() {
+        const element = this.template.querySelector('canvas');
+        if(element) {
             element.width = this.grid.width;
             element.height = this.grid.height;
             
@@ -21,18 +42,20 @@ export default class PixelCanvas extends LightningElement {
             element.style.height = this.grid.height * this.scale + 'px';
             
             this.canvas = element.getContext("2d");
+            
+            this.lastChange = 0;
+            
+            this.updateCanvas();
         }
     }
     
-    get changeHandlerWorkaround() {
-        if(this.canvas) {
-            this.grid.changesSince(this.lastChange).forEach(({ x, y, color }) => {
-                (this.canvas.fillStyle = color)
-                    ? this.canvas.fillRect(x, y, 1, 1)
-                    : this.canvas.clearRect(x, y, 1, 1);
-            });
-    
-            this.lastChange = this.grid.changeId;
-        }
+    updateCanvas() {
+        this.grid.changesSince(this.lastChange).forEach(({ x, y, color }) => {
+            (this.canvas.fillStyle = color)
+                ? this.canvas.fillRect(x, y, 1, 1)
+                : this.canvas.clearRect(x, y, 1, 1);
+        });
+        
+        this.lastChange = this.grid.changeId;
     }
 }
