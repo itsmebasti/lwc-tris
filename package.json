@@ -5,6 +5,7 @@
         "helmet": "^4.6.0"
     },
     "devDependencies": {
+        "firebase": "^9.6.10",
         "lwc-services": "^3.2.2"
     },
     "engines": {

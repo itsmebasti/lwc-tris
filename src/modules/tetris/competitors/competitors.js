@@ -1,21 +1,25 @@
 import { LightningElement, api, track } from 'lwc';
 import Shape from '../../view/model/shape';
 import Grid from '../../view/model/grid';
+import MultiPlayerSession from '../app/sesssion/multiPlayerSession';
 
 export default class Competitors extends LightningElement {
     @track competitors = [];
     
     @api set session(session) {
-        session.on('connect', () => {
-            this.competitors = [];
-            
-            try {
-                session.on('competitorUpdate', this.updateCompetitor);
-                session.on('competitorQuit', this.removeCompetitor);
-            }
-            catch(singlePlayer) {}
-        })
+        if(session instanceof MultiPlayerSession) {
+            session.on('connect', () => this.observePlayerConnections(session));
+        }
     } get session() {}
+    
+    
+    observePlayerConnections(session) {
+        this.competitors = [];
+        session.on('competitorUpdate', this.updateCompetitor);
+        
+        const connection = setInterval(() => this.cleanupConnections(session), 1000);
+        session.toBeClosed(() => clearInterval(connection));
+    }
     
     updateCompetitor = (name, {state, canvas}) => {
         const shape = new Shape(canvas);
@@ -30,7 +34,10 @@ export default class Competitors extends LightningElement {
         competitor.grid.set(0, 0, shape, 'grey');
     }
     
-    removeCompetitor = (removed) => {
-        this.competitors = this.competitors.filter(({name}) => name !== removed);
+    cleanupConnections = (session) => {
+        session.queryConnectedNames()
+               .then((connected) => {
+                   this.competitors = this.competitors.filter(({name}) => connected.includes(name))
+               });
     }
 }

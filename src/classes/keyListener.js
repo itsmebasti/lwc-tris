@@ -13,6 +13,7 @@ export default class KeyListener {
     }
     
     listen(actions = this.actions) {
+        this.stopListening();
         this.actions = actions;
         document.addEventListener('keydown', this.addKey);
         document.addEventListener('keyup', this.removeKey);

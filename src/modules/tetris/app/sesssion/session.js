@@ -1,42 +1,33 @@
-import database from './database';
 import Publisher from '../../../../classes/publisher';
+import { getDatabase, ref, set, orderByValue, limitToLast, get, query } from 'firebase/database';
 
 export default class Session extends Publisher {
+    static ABSTRACT_METHODS = ['connect', 'update', 'startBlockStream'];
+    
     player;
-    disconnects = [];
     
     constructor(...events) {
         super(...events);
-    
-        const abstract = ['connect', 'update', 'startBlockStream'];
-        abstract.forEach((method) => this.assert(typeof this[method] === 'function', 'please implement abstract method ' + method));
+        
+        Session.ABSTRACT_METHODS
+               .forEach((method) => this.assert(typeof this[method] === 'function', 'please implement abstract method ' + method));
     }
     
     publish(evt, ...details) {
         if(this.player) super.publish(evt, ...details);
     }
     
-    bind(reference, event, callback) {
-        reference.on(event, callback);
-        
-        this.disconnects.push(() => reference.off(event, callback));
-    }
-    
     ref(name) {
-        return database.ref(name);
-    }
-    
-    disconnect() {
-        this.disconnects.forEach((unregister) => unregister());
+        return ref(getDatabase(), name);
     }
     
     uploadScore(score) {
-        return this.ref(`highScore/${this.player}`).set(score)
+        return set(this.ref(`highScore/${this.player}`), score)
             .catch((ignored) => {});
     }
     
     queryHighScore() {
-        return this.ref('highScore').orderByValue().limitToLast(10).once('value')
+        return get(query(this.ref('highScore'), orderByValue(), limitToLast(10)))
            .then((data) => {
                const result = [];
                data.forEach((entry) => (result.unshift({player: entry.key, score: entry.val()}), false));

@@ -1,12 +1,15 @@
 import { shuffled7Bag } from '../engine/sevenBagRandomizer';
 import FirebaseBlockStream from '../engine/firebaseBlockStream';
 import Session from './session';
+import { get, set, update, query, onValue, onChildChanged, child, orderByChild, limitToFirst, startAt } from 'firebase/database';
 
 export default class MultiPlayerSession extends Session {
     room;
+    openConnections = [];
+    static TIMEOUT = 2 * 1000;
     
     constructor(room = 'Default') {
-        super('connect', 'start', 'competitorUpdate', 'competitorQuit');
+        super('connect', 'start', 'competitorUpdate');
         
         this.room = this.ref(`rooms/${room}`);
     }
@@ -15,78 +18,90 @@ export default class MultiPlayerSession extends Session {
     // OVERRIDES
     
     connect(player, canvas, state) {
-        return this.cleanupCompetitors()
-            .then(() => this.child(`competitors/${player}`).set({ state, canvas: canvas.binaries, joined: Date.now(), connected: Date.now() }))
+        return this.queryPlayerNames()
+            .then((players) => {
+                if(players.includes(player)) {
+                    throw player + ' is already playing!';
+                }
+            })
+            .then(() => set(this.child(`competitors/${player}`),{ state, canvas: canvas.binaries, joined: Date.now(), connected: Date.now() }))
             .then(() => {
                 this.player = player;
     
-                this.bind(this.child('blocks').limitToFirst(8), 'value', (data) =>
-                    (data.numChildren() === 7) && this.publish('start', new FirebaseBlockStream(this, data.val())));
+                onValue(query(this.child('blocks'), limitToFirst(8)), (data) =>
+                    (data.size === 7) && this.publish('start', new FirebaseBlockStream(this.room, data.val())));
     
-                this.bind(this.child('competitors'), 'child_changed', (data) =>
+                onChildChanged(this.child('competitors'), (data) =>
                     (data.key !== this.player) && this.publish('competitorUpdate', data.key, data.val()));
     
-                this.bind(this.child('competitors'), 'child_removed', ({ key }) => this.publish('competitorQuit', key));
-                
-                const connect = setInterval(() => this.update({connected: Date.now() }), 1000);
-                this.disconnects.push(() => clearInterval(connect));
+                const connection = setInterval(() => this.update({ connected: Date.now() }), 1000);
+                this.toBeClosed(() => clearInterval(connection));
     
-                this.publish('connect');
+                this.publish('connect', player);
             })
     }
     
     startBlockStream() {
-        return this.cleanupCompetitors()
-                   .then(() => this.queryHost())
+        return this.queryHost()
                    .then((host) => this.assert(this.player === host, host + ' is your current Host'))
-                   .then(() => this.queryPlaying())
+                   .then(() => this.queryPlayerNames())
                    .then((players) => this.assert(players.length === 0, this.stillPlayingString(players)))
-                   .then(() => this.child('blocks').set(this.jsonProof(shuffled7Bag())))
-                   .then(() => 'Good Luck!');
+                   .then(() => set(this.child('blocks'), this.jsonProof(shuffled7Bag())))
+                   .then(() => 'Good Luck!')
     }
     
     update({ state, canvas, connected, joined }) {
-        return this.child(`competitors/${this.player}`)
-                   .update(this.jsonProof({ state, canvas: canvas?.binaries, connected, joined }))
-            .then(() => {
-                const {playing, score} = state || {};
-                if(!playing && score) {
-                    return this.uploadScore(score);
-                }
-            });
+        return update(this.child(`competitors/${this.player}`),
+                        this.jsonProof({ state, canvas: canvas?.binaries, connected, joined }));
+    }
+    
+    toBeClosed(connection) {
+        this.openConnections.push(connection);
     }
     
     // PRIVATE
     
-    cleanupCompetitors() {
-        return this.child('competitors')
-                   .orderByChild('connected')
-                   .endAt(Date.now() - 2000)
-                   .once('value')
-                   .then((deprecated) => {
-                       const removals = [];
-                       deprecated.forEach(({ref}) => (removals.push(ref.remove()), false));
-                       return Promise.all(removals);
-                   });
+    disconnect() {
+        this.openConnections.forEach((closer) => closer());
     }
     
     queryHost() {
-        return this.child('competitors')
-                   .orderByChild('joined')
-                   .limitToFirst(1)
-                   .once('child_added')
-                   .then(({ key }) => key);
+        return get(this.connectedPlayersQuery())
+            .then((competitors) => {
+                let result;
+    
+                competitors.forEach((competitor) => {
+                    if(!result || competitor.val().joined < result?.val().joined) {
+                        result = competitor;
+                    }
+                });
+    
+                return result.key;
+            });
     }
     
-    queryPlaying() {
-        return this.child('competitors')
-                   .orderByChild('state/playing').equalTo(true)
-                   .once('value')
-                   .then((playing) => {
-                       const names = [];
-                       playing.forEach(({ key }) => (names.push(key), false));
-                       return names;
-                   });
+    queryPlayerNames() {
+        return get(this.connectedPlayersQuery())
+            .then((competitors) => {
+                const result = [];
+            
+                competitors.forEach((competitor) => {
+                    if(competitor.val().state.playing) {
+                        result.push(competitor.key);
+                    }
+                });
+            
+                return result;
+            });
+    }
+    
+    queryConnectedNames() {
+        return get(this.connectedPlayersQuery())
+            .then((competitors) => Object.keys(competitors.val()));
+    }
+    
+    connectedPlayersQuery() {
+        return query(this.child('competitors'), orderByChild('connected'), startAt(Date.now() - MultiPlayerSession.TIMEOUT));
     }
     
     stillPlayingString(players) {
@@ -105,6 +120,6 @@ export default class MultiPlayerSession extends Session {
     }
     
     child(path) {
-        return this.room.child(path);
+        return child(this.room, path);
     }
 }

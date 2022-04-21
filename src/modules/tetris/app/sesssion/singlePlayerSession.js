@@ -5,12 +5,12 @@ export default class SinglePlayerSession extends Session {
     player;
     
     constructor() {
-        super('connect', 'start', 'disconnect');
+        super('connect', 'start');
     }
     
     async connect(player) {
         this.player = player;
-        this.publish('connect');
+        this.publish('connect', player);
     }
     
     async startBlockStream() {

@@ -1,4 +1,5 @@
 import { LightningElement, track } from 'lwc';
+import './sesssion/database';
 import Engine from './engine/engine';
 import Grid from '../../view/model/grid';
 import AudioPlayer from '../../../classes/audioPlayer';
@@ -25,10 +26,15 @@ export default class App extends LightningElement {
     
     highScore;
     
-    constructor() {
-        super();
+    connectedCallback() {
         this.load(MultiPlayerSession);
         this.addEngineHandlers();
+    }
+    
+    disconnectedCallback() {
+        this.engine.reset();
+        this.session.disconnect?.();
+        this.keyListener.stopListening();
     }
     
     renderedCallback() {
@@ -39,12 +45,14 @@ export default class App extends LightningElement {
         }
     }
     
-    load(Session) {
+    load(sessionConstructor) {
         this.engine.reset();
         this.nextView.clear();
     
-        this.session && this.session.disconnect();
-        this.session = new Session(url.room);
+        this.session?.disconnect?.();
+        this.session = new sessionConstructor(url.room);
+        this.session.on('connect', this.nameApproved);
+        this.session.on('connect', this.addKeyListeners);
         this.session.on('start', this.startRound);
         
         this.connect(this.player);
@@ -63,40 +71,37 @@ export default class App extends LightningElement {
         }
     }
     
+    nameApproved = (player) => {
+        this.player = player;
+        COOKIE.player = player;
+    
+        this.toast('Welcome ' + player);
+    }
+    
     connect(player) {
         player && this.tryToConnect(player)
-            .catch(() => new Promise((resolve) => setTimeout(resolve, 2000))
-                .then(() => this.tryToConnect(player)))
-            .catch((error) => {
-                this.player = undefined;
-                return (error.code === 'PERMISSION_DENIED') ? player + ' is already playing' : error;
-            })
-            .then(this.toast);
+            .catch(() => new Promise((resolve) => setTimeout(resolve, MultiPlayerSession.TIMEOUT))
+                                .then(() => this.tryToConnect(player))
+                                .catch((error) => {
+                                    this.player = undefined;
+                                    this.toast(error);
+                                }));
     }
     
     tryToConnect(player) {
         return this.session.connect(player, this.grid, this.state)
-            .then(() => {
-                this.player = player;
-                COOKIE.player = player;
-        
-                this.keyListener.stopListening();
-                this.keyListener.listen({
-                    'ArrowRight': () => this.engine.move(1),
-                    'ArrowLeft': () => this.engine.move(-1),
-                    'ArrowUp': () => this.engine.rotate(),
-                    'ArrowDown': () => this.engine.softDrop(),
-                    ' ': () => this.engine.hardDrop(),
-                    'Enter': () => (this.state.playing) ? this.engine.pauseResume() : this.requestStart(),
-                    'm': () => this.audio.toggleAudio()
-                });
-            })
     }
     
-    disconnectedCallback() {
-        this.engine.reset();
-        this.session.disconnect();
-        this.keyListener.stopListening();
+    addKeyListeners = () => {
+        this.keyListener.listen({
+            'ArrowRight': () => this.engine.move(1),
+            'ArrowLeft': () => this.engine.move(-1),
+            'ArrowUp': () => this.engine.rotate(),
+            'ArrowDown': () => this.engine.softDrop(),
+            ' ': () => this.engine.hardDrop(),
+            'Enter': () => (this.state.playing) ? this.engine.pauseResume() : this.requestStart(),
+            'm': () => this.audio.toggleAudio()
+        });
     }
     
     requestStart() {
@@ -118,7 +123,9 @@ export default class App extends LightningElement {
             this.state = changed.state ?? this.state;
             this.session.update(changed);
         });
-        this.engine.on('gameOver', () => this.session.update({state: this.state}).then(this.queryHighScore));
+        this.engine.on('gameOver', () => this.session.update({state: this.state})
+                                         .then(() => this.session.uploadScore(this.state.score))
+                                         .then(this.queryHighScore));
     
         this.engine.on('start', () => this.audio.speed(1) && this.audio.play());
         this.engine.on('rotate', () => this.audio.play("rotate"));
@@ -129,7 +136,7 @@ export default class App extends LightningElement {
     
     queryHighScore = () => {
         this.session.queryHighScore()
-            .then((highScore) => this.highScore = highScore)
+            .then((highScore) => this.highScore = highScore);
     }
     
     toggleMode({target}) {

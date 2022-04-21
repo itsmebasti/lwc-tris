@@ -95,7 +95,6 @@ export default class Engine extends Publisher {
         if(!this.current || this.state.paused) return;
         this.clock.stop();
         this.move(0, this.canvas.height);
-        this.clock.start(this.speed);
     }
     
     rotate() {

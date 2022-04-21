@@ -1,14 +1,18 @@
 import Stream from '../../../../classes/stream';
 import { shuffled7Bag } from './sevenBagRandomizer';
 import Shape from '../../../view/model/shape';
+import { push, child, onChildAdded, startAt, query, orderByKey } from 'firebase/database';
 
 export default class FirebaseBlockStream extends Stream {
-    constructor(session, initialBlocks) {
+    constructor(room, initialBlocks) {
         super(7, initialBlocks.map((block) => new Shape(block)));
         
-        const blockStream = session.child('blocks').orderByKey().startAfter('6');
-        session.bind(blockStream, 'child_added', (data) => this.write(new Shape(data.val())));
+        onChildAdded(query(child(room, 'blocks'), orderByKey(), startAt('7')), (data) => this.write(new Shape(data.val())));
         
-        super.queryDataHook = () => shuffled7Bag().forEach((block) => session.child('blocks').push(session.jsonProof(block)));
+        super.queryDataHook = () => shuffled7Bag().forEach((block) => push( child(room, 'blocks'), this.jsonProof(block)));
+    }
+    
+    jsonProof(value) {
+        return JSON.parse(JSON.stringify(value));
     }
 }
