@@ -2,15 +2,11 @@
   position: relative;
 }
 
-::slotted(:not(:first-child)){
-  display: none;
-}
-
-::slotted(:first-child){
-  background: rgba(255,255,255,.7);
+.overlay {
   position: absolute;
+  top: 0;
+  background: rgba(255,255,255,.7);
   width: 100%;
   height: 100%;
-  top: 0;
   overflow: hidden;
 }

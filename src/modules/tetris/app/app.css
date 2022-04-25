@@ -11,12 +11,6 @@
   padding: 20px;
 }
 
-h1, h2, h3, h4, h5 {
-  margin: 0;
-  padding: 5px;
-  text-align: center;
-}
-
 .view {
   width: max-content;
   border: navy solid 3px;
@@ -36,10 +30,4 @@ select {
 
 .details {
   width: 150px;
-}
-
-.truncate {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }

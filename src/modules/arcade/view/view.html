@@ -6,6 +6,8 @@
         <view-pixel-canvas if:true={view.pixelCanvas} grid={grid} scale={scale} background={background}></view-pixel-canvas>
         <view-checkbox if:true={view.checkbox} grid={grid}></view-checkbox>
         
-        <slot name="overlay"></slot>
+        <div class="overlay slds-hidden">
+            <slot name="overlay" onslotchange={toggleOverlay}></slot>
+        </div>
     </div>
 </template>

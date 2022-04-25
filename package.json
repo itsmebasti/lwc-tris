@@ -5,17 +5,24 @@
         "helmet": "^4.6.0"
     },
     "devDependencies": {
+        "@lwc/rollup-plugin": "^2.10.0",
+        "@lwc/synthetic-shadow": "^2.11.0",
+        "@rollup/plugin-node-resolve": "^13.2.1",
+        "@rollup/plugin-replace": "^4.0.0",
         "firebase": "^9.6.10",
-        "lwc-services": "^3.2.2"
+        "lightning-base-components": "^1.14.6-alpha",
+        "lwc": "^2.10.0",
+        "rollup": "^2.70.0",
+        "rollup-plugin-copy": "^3.4.0",
+        "rollup-plugin-livereload": "^2.0.5",
+        "rollup-plugin-serve": "^1.1.0",
+        "rollup-plugin-terser": "^7.0.2"
     },
-    "engines": {
-        "node": "16.x"
-    },
-    "license": "CC0-1.0",
     "scripts": {
-        "build": "lwc-services build --mode production",
+        "clear": "rm -rf dist",
+        "build": "yarn clear && rollup -c",
+        "watch": "yarn clear && rollup -c -w -m",
         "serve": "node scripts/server.js",
-        "local": "yarn build && yarn serve",
-        "watch": "lwc-services watch"
+        "local": "yarn build && yarn serve"
     }
 }

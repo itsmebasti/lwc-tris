@@ -31,4 +31,14 @@ export default class View extends LightningElement {
             }
         }
     }
+    
+    toggleOverlay(evt) {
+        const divClasses = this.template.querySelector('.overlay').classList;
+        if(evt.target.assignedNodes().length > 0) {
+            divClasses.replace('slds-hidden', 'slds-show');
+        }
+        else {
+            divClasses.replace('slds-show', 'slds-hidden');
+        }
+    }
 }

@@ -3,11 +3,11 @@
         <arcade-toast background="#303030"></arcade-toast>
         
         <div class="game">
-            <h2>LWC-TRIS</h2>
+            <div class="slds-text-heading_large slds-text-align--center">LWC-TRIS</div>
             <div class="view">
                 <arcade-view grid={grid} scale="20" background="black" border="navy">
                     <div slot="overlay" if:false={running}>
-                        <h1>[enter]<br>to play</h1>
+                        <div class="slds-text-heading_large slds-text-align--center">[enter]<br>to play</div>
                         <table if:false={highScore}>
                             <thead>
                                 <tr>
@@ -39,7 +39,7 @@
             </div>
         </div>
         <div class="details">
-            <p class="truncate">{player}</p>
+            <p class="slds-truncate">{player}</p>
             <input if:false={player} type="text" placeholder="name">
             <select onchange={toggleMode}>
                 <option value="s">Single Player</option>
