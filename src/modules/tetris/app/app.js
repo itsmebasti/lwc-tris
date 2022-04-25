@@ -94,8 +94,8 @@ export default class App extends LightningElement {
     
     addKeyListeners = () => {
         this.keyListener.listen({
-            'ArrowRight': () => this.engine.move(1),
-            'ArrowLeft': () => this.engine.move(-1),
+            'ArrowRight': () => this.engine.moveX(1),
+            'ArrowLeft': () => this.engine.moveX(-1),
             'ArrowUp': () => this.engine.rotate(),
             'ArrowDown': () => this.engine.softDrop(),
             ' ': () => this.engine.hardDrop(),

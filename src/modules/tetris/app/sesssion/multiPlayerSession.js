@@ -18,7 +18,7 @@ export default class MultiPlayerSession extends Session {
     // OVERRIDES
     
     connect(player, canvas, state) {
-        return this.queryPlayerNames()
+        return this.queryConnectedNames()
             .then((players) => {
                 if(players.includes(player)) {
                     throw player + ' is already playing!';
@@ -34,7 +34,7 @@ export default class MultiPlayerSession extends Session {
                 onChildChanged(this.child('competitors'), (data) =>
                     (data.key !== this.player) && this.publish('competitorUpdate', data.key, data.val()));
     
-                const connection = setInterval(() => this.update({ connected: Date.now() }), 1000);
+                const connection = setInterval(() => this.update({ connected: Date.now() }), 900);
                 this.toBeClosed(() => clearInterval(connection));
     
                 this.publish('connect', player);
@@ -97,7 +97,7 @@ export default class MultiPlayerSession extends Session {
     
     queryConnectedNames() {
         return get(this.connectedPlayersQuery())
-            .then((competitors) => Object.keys(competitors.val()));
+            .then((competitors) => Object.keys(competitors.val() ?? []));
     }
     
     connectedPlayersQuery() {

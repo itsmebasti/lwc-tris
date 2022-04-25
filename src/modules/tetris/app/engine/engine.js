@@ -17,7 +17,7 @@ export default class Engine extends Publisher {
     constructor(canvas) {
         super('start', 'next', 'change', 'rotate', 'lock', 'tetris', 'gameOver');
         this.canvas = canvas;
-        this.clock = new GameClock(() => this.move(0, 1));
+        this.clock = new GameClock(() => this.moveY(1));
         this.initState();
     }
     
@@ -86,21 +86,21 @@ export default class Engine extends Publisher {
     }
     
     softDrop() {
-        if(!this.current || this.state.paused) return;
+        if(!this.running) return;
         this.clock.stop();
-        this.move(0, 1);
+        this.moveY(1);
         this.clock.start(this.speed);
     }
     
     hardDrop() {
-        if(!this.current || this.state.paused) return;
+        if(!this.running) return;
         this.clock.stop();
         this.readyToLock = true;
-        this.move(0, this.canvas.height);
+        this.moveY(this.canvas.height);
     }
     
     rotate() {
-        if(!this.current || this.state.paused) return;
+        if(!this.running) return;
         const {x, y, block} = this.current;
         
         this.apply(() => {
@@ -112,28 +112,37 @@ export default class Engine extends Publisher {
         });
     }
     
-    move(xOffset, yOffset = 0) {
-        if(!this.current || this.state.paused) return;
+    moveX(offset) {
+        if(!this.running) return;
         const {x, y, block} = this.current;
+        const target = x + offset;
         
-        const newX = x+xOffset;
-        const newY = y+yOffset;
-        
-        this.apply(() => {
-            this.current.x = this.lastPossible(x, newX, (x) => this.canvas.valid(x, y, block));
-            this.current.y = this.lastPossible(y, newY, (y) => this.canvas.valid(x, y, block));
-        });
+        this.apply(() => this.current.x = this.lastPossible(x, target, (x) => this.canvas.valid(x, y, block)));
+    }
     
-        const collisionDetected = (this.current.y !== newY);
+    moveY(offset) {
+        if(!this.running) return;
+        const {x, y, block} = this.current;
+        const target = y + offset;
         
-        if(collisionDetected && this.readyToLock) {
-            this.lockCurrent();
-
-            this.clearTetris()
-                .then(() => this.insertBlock());
+        this.apply(() => this.current.y = this.lastPossible(y, target, (y) => this.canvas.valid(x, y, block)));
+        
+        const yCollision = (this.current.y !== target);
+        if(yCollision) {
+            if(this.readyToLock) {
+                this.readyToLock = false;
+                this.lockCurrent();
+                
+                this.clearTetris()
+                    .then(() => this.insertBlock());
+            }
+            else {
+                this.readyToLock = true;
+            }
         }
-        
-        this.readyToLock = (collisionDetected && !this.readyToLock);
+        else if(offset > 0) {
+            this.readyToLock = false;
+        }
     }
     
     apply(change) {
@@ -194,9 +203,10 @@ export default class Engine extends Publisher {
     }
     
     gameOver(x, y, block) {
+        this.state.playing = false;
+        
         this.canvas.animate([{x, y}], 1000, 11, [block.clone('grey'), block.clone(CLEAR)])
             .then(() => {
-                this.state.playing = false;
                 this.publish('gameOver');
             });
     }
@@ -220,5 +230,9 @@ export default class Engine extends Publisher {
     
     get levelFactor() {
         return Math.min(1, (this.state.level-1) / (maxLevel-1));
+    }
+    
+    get running() {
+        return (this.state.playing && !this.state.paused);
     }
 }
