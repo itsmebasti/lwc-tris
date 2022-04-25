@@ -12,7 +12,7 @@ export default class Engine extends Publisher {
     current;
     state;
     clock;
-    executingBottomTic = false;
+    readyToLock = false;
     
     constructor(canvas) {
         super('start', 'next', 'change', 'rotate', 'lock', 'tetris', 'gameOver');
@@ -95,7 +95,7 @@ export default class Engine extends Publisher {
     hardDrop() {
         if(!this.current || this.state.paused) return;
         this.clock.stop();
-        this.executingBottomTic = true;
+        this.readyToLock = true;
         this.move(0, this.canvas.height);
     }
     
@@ -126,19 +126,14 @@ export default class Engine extends Publisher {
     
         const collisionDetected = (this.current.y !== newY);
         
-        if(collisionDetected) {
-            if(this.executingBottomTic) {
-                this.executingBottomTic = false;
-                
-                this.lockCurrent();
-    
-                this.clearTetris()
-                    .then(() => this.insertBlock());
-            }
-            else {
-                this.executingBottomTic = true;
-            }
+        if(collisionDetected && this.readyToLock) {
+            this.lockCurrent();
+
+            this.clearTetris()
+                .then(() => this.insertBlock());
         }
+        
+        this.readyToLock = (collisionDetected && !this.readyToLock);
     }
     
     apply(change) {
