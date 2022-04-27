@@ -7,19 +7,16 @@ export default class Competitors extends LightningElement {
     @track competitors = [];
     
     @api set session(session) {
+        this.competitors = [];
+        
         if(session instanceof MultiPlayerSession) {
-            session.on('connect', () => this.observePlayerConnections(session));
+            session.on('competitorUpdate', this.updateCompetitor);
+    
+            const connection = setInterval(() => this.cleanupConnections(session), 1000);
+            session.toBeClosed(() => clearInterval(connection));
         }
     } get session() {}
     
-    
-    observePlayerConnections(session) {
-        this.competitors = [];
-        session.on('competitorUpdate', this.updateCompetitor);
-        
-        const connection = setInterval(() => this.cleanupConnections(session), 1000);
-        session.toBeClosed(() => clearInterval(connection));
-    }
     
     updateCompetitor = (name, {state, canvas}) => {
         const shape = new Shape(canvas);

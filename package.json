@@ -21,7 +21,7 @@
     "scripts": {
         "clear": "rm -rf dist",
         "build": "yarn clear && rollup -c",
-        "watch": "yarn clear && rollup -c -w -m",
+        "watch": "yarn clear && rollup -c -w",
         "serve": "node scripts/server.js",
         "local": "yarn build && yarn serve"
     }

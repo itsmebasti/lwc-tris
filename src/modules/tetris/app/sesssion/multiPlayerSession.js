@@ -6,7 +6,7 @@ import { get, set, update, query, onValue, onChildChanged, child, orderByChild, 
 export default class MultiPlayerSession extends Session {
     room;
     openConnections = [];
-    static TIMEOUT = 2 * 1000;
+    static TIMEOUT = 3 * 1000;
     
     constructor(room = 'Default') {
         super('connect', 'start', 'competitorUpdate');
@@ -28,13 +28,17 @@ export default class MultiPlayerSession extends Session {
             .then(() => {
                 this.player = player;
     
-                onValue(query(this.child('blocks'), limitToFirst(8)), (data) =>
-                    (data.size === 7) && this.publish('start', new FirebaseBlockStream(this.room, data.val())));
+                this.toBeClosed(
+                    onValue(query(this.child('blocks'), limitToFirst(8)), (data) =>
+                        (data.size === 7) && this.publish('start', new FirebaseBlockStream(this.room, data.val())))
+                );
     
-                onChildChanged(this.child('competitors'), (data) =>
-                    (data.key !== this.player) && this.publish('competitorUpdate', data.key, data.val()));
+                this.toBeClosed(
+                    onChildChanged(this.child('competitors'), (data) =>
+                        (data.key !== this.player) && this.publish('competitorUpdate', data.key, data.val()))
+                );
     
-                const connection = setInterval(() => this.update({ connected: Date.now() }), 900);
+                const connection = setInterval(() => this.update({ connected: Date.now() }), 500);
                 this.toBeClosed(() => clearInterval(connection));
     
                 this.publish('connect', player);
