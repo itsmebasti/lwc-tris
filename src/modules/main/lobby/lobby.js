@@ -2,8 +2,8 @@ import { LightningElement, track } from 'lwc';
 
 export default class Lobby extends LightningElement {
     @track games = {
-        tetris: 1,
-        snake: 0,
+        tetris: 0,
+        snake: 1,
         painter: 0,
     }
     

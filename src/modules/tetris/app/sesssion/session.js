@@ -1,4 +1,4 @@
-import Publisher from '../../../../classes/publisher';
+import { Publisher } from 'lwc-arcade';
 import { getDatabase, ref, set, orderByValue, limitToLast, get, query } from 'firebase/database';
 
 export default class Session extends Publisher {

@@ -1,11 +1,9 @@
 import { LightningElement, track } from 'lwc';
-import Grid from '../../view/model/grid';
-import KeyListener from '../../../classes/keyListener';
-import { RIGHT, LEFT, UP, DOWN } from '../../../classes/directions';
+import { Direction, KeyListener, Cookie, Grid } from 'lwc-arcade';
+const { RIGHT, LEFT, UP, DOWN } = Direction;
 import Engine from './engine/engine';
-import cookies from '../../../classes/cookie';
 
-const COOKIE = cookies('snake');
+const COOKIE = Cookie('snake');
 
 export default class App extends LightningElement {
     @track grid = new Grid(20);
@@ -79,7 +77,7 @@ export default class App extends LightningElement {
     }
     
     toast = (errorOrMessage) => {
-        errorOrMessage && this.template.querySelector('arcade-toast')
+        errorOrMessage && this.template.querySelector('main-toast')
                               .show(errorOrMessage.message ?? errorOrMessage);
     }
 }

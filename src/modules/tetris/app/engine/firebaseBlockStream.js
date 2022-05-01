@@ -1,6 +1,6 @@
-import Stream from '../../../../classes/stream';
+import Stream from './stream'
+import { Shape } from 'lwc-arcade';
 import { shuffled7Bag } from './sevenBagRandomizer';
-import Shape from '../../../view/model/shape';
 import { push, child, onChildAdded, startAt, query, orderByKey } from 'firebase/database';
 
 export default class FirebaseBlockStream extends Stream {

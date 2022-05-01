@@ -1,8 +1,6 @@
-import { DirectionQueue, DOWN } from '../../../../classes/directions';
-import GameClock from '../../../../classes/gameClock';
-import Random from '../../../../classes/random';
-import Publisher from '../../../../classes/publisher';
-
+import { GameClock, Publisher } from 'lwc-arcade';
+import Random from '../../../../lib/random';
+import { Direction } from 'lwc-arcade';
 export default class Engine extends Publisher  {
     canvas;
     directions;
@@ -13,7 +11,7 @@ export default class Engine extends Publisher  {
         super('gameOver', 'snack', 'start');
         this.canvas = canvas;
         this.clock = new GameClock(() => this.move());
-        this.directions = new DirectionQueue();
+        this.directions = new Direction.Queue();
     }
     
     reset() {
@@ -34,7 +32,7 @@ export default class Engine extends Publisher  {
         this.canvas.paint(x, 3, 'orange');
     
         this.drawNextSnack();
-        this.directions.start(DOWN);
+        this.directions.start(Direction.DOWN);
         this.clock.start(speed);
         this.publish('start')
     }

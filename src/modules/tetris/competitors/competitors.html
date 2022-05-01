@@ -3,7 +3,7 @@
         <div for:each={competitors} for:item="competitor" key={competitor.name} class="competitor">
             <p class="truncate">{competitor.name}</p>
             <div class="view">
-                <view-pixel-canvas grid={competitor.grid} scale="8" background="#303030"></view-pixel-canvas>
+                <arcade-view type="pixelCanvas" grid={competitor.grid} scale="8" background="#303030"></arcade-view>
             </div>
             Level: {competitor.state.level}
             Score: {competitor.state.score}

@@ -1,8 +1,0 @@
-<template>
-    <svg width={width} height={height} viewBox={viewBox}>
-        <template for:each={grid} for:item="row" key={row.y}>
-            <rect for:each={row} for:item="pixel" key={pixel.key}
-                width="1" height="1" x={pixel.x} y={pixel.y} fill={pixel.color} />
-        </template>
-    </svg>
-</template>

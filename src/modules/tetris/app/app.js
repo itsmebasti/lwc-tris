@@ -1,15 +1,12 @@
 import { LightningElement, track } from 'lwc';
 import './sesssion/database';
 import Engine from './engine/engine';
-import Grid from '../../view/model/grid';
-import AudioPlayer from '../../../classes/audioPlayer';
-import KeyListener from '../../../classes/keyListener';
+import { AudioPlayer, KeyListener, Grid, Cookie } from 'lwc-arcade';
 import SinglePlayerSession from './sesssion/singlePlayerSession';
 import MultiPlayerSession from './sesssion/multiPlayerSession';
-import cookies from '../../../classes/cookie';
-import url from '../../../classes/url';
+import Url from '../../../lib/url';
 
-const COOKIE = cookies('tetris');
+const COOKIE = Cookie('tetris');
 
 export default class App extends LightningElement {
     @track grid = new Grid(10, 20);
@@ -19,7 +16,7 @@ export default class App extends LightningElement {
     state = this.engine.state;
     
     keyListener = new KeyListener(15, 250);
-    audio = new AudioPlayer("tetris");
+    audio = new AudioPlayer("./assets/audio/tetris/");
     
     player = COOKIE.player;
     session;
@@ -50,7 +47,7 @@ export default class App extends LightningElement {
         this.nextView.clear();
     
         this.session?.disconnect?.();
-        this.session = new sessionConstructor(url.room);
+        this.session = new sessionConstructor(Url.room);
         this.session.on('connect', this.nameApproved);
         this.session.on('connect', this.addKeyListeners);
         this.session.on('start', this.startRound);
@@ -149,7 +146,7 @@ export default class App extends LightningElement {
     }
     
     toast = (errorOrMessage) => {
-        errorOrMessage && this.template.querySelector('arcade-toast')
+        errorOrMessage && this.template.querySelector('main-toast')
             .show(errorOrMessage.message ?? errorOrMessage);
     }
 }

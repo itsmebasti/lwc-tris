@@ -1,0 +1,16 @@
+<template>
+    <div class="main">
+<!--        <github-corner repo="https://github.com/itsmebasti/lwc-tris"></github-corner>-->
+        
+        <label for="select">choose a game: </label>
+        <select id="select" onchange={selectGame}>
+            <option for:each={options} for:item="game" key={game.name} value={game.name} selected={game.selected}>{game.name}</option>
+        </select>
+        
+        <br>
+        
+        <tetris-app if:true={games.tetris}></tetris-app>
+        <snake-app if:true={games.snake}></snake-app>
+        <arcade-painter if:true={games.painter}></arcade-painter>
+    </div>
+</template>

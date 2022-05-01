@@ -1,4 +1,19 @@
 {
+    "name": "lwc-tris",
+    "license": "MIT",
+    "lwc": {
+        "modules": [
+            {
+                "dir": "src/modules"
+            },
+            {
+                "npm": "lwc-arcade"
+            },
+            {
+                "npm": "lightning-base-components"
+            }
+        ]
+    },
     "dependencies": {
         "compression": "^1.7.4",
         "express": "^4.17.1",
@@ -12,6 +27,7 @@
         "firebase": "^9.6.10",
         "lightning-base-components": "^1.14.6-alpha",
         "lwc": "^2.10.0",
+        "lwc-arcade": "https://github.com/itsmebasti/lwc-arcade",
         "rollup": "^2.70.0",
         "rollup-plugin-copy": "^3.4.0",
         "rollup-plugin-livereload": "^2.0.5",

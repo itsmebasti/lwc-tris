@@ -1,6 +1,4 @@
-import Shape, { CLEAR } from '../../../view/model/shape';
-import Publisher from '../../../../classes/publisher';
-import GameClock from '../../../../classes/gameClock';
+import { Publisher, GameClock, Shape, Pixel } from 'lwc-arcade';
 
 const maxLevel = 15;
 const maxSpeed = 400;
@@ -181,7 +179,7 @@ export default class Engine extends Publisher {
             
             const coords = tetris.map(({y}) => ({ x: 0, y }));
             
-            await this.canvas.animate(coords, this.speed, 5, [this.row(CLEAR), this.row('grey')])
+            await this.canvas.animate(coords, this.speed, 5, [this.row(Pixel.CLEAR), this.row('grey')])
                       .then(() => this.floodEmptyRows());
         }
     }
@@ -205,7 +203,7 @@ export default class Engine extends Publisher {
     gameOver(x, y, block) {
         this.state.playing = false;
         
-        this.canvas.animate([{x, y}], 1000, 11, [block.clone('grey'), block.clone(CLEAR)])
+        this.canvas.animate([{x, y}], 1000, 11, [block.clone('grey'), block.clone(Pixel.CLEAR)])
             .then(() => {
                 this.publish('gameOver');
             });
@@ -233,6 +231,6 @@ export default class Engine extends Publisher {
     }
     
     get running() {
-        return (this.state.playing && !this.state.paused);
+        return (this.state.playing && !this.state.paused && this.current);
     }
 }

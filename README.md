@@ -22,7 +22,7 @@ cd lwc-tris
 2. Install the project dependencies using `yarn` (or `npm`, if you prefer that alternatively)
 
 ```
-yarn install
+yarn
 ```
 
 3. Start the app in watch mode.

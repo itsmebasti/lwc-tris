@@ -1,5 +1,5 @@
-import Shape from '../../../view/model/shape';
-import Random from '../../../../classes/random';
+import { Shape } from 'lwc-arcade';
+import Random from '../../../../lib/random';
 
 const I = new Shape([[0,0,0,0], [1,1,1,1], [0,0,0,0]], 'blue');
 const O = new Shape([[0,0,0,0],[0,1,1,0], [0,1,1,0],[0,0,0,0]], 'yellow');

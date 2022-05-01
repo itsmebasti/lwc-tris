@@ -1,6 +1,6 @@
-import Stream from '../../../../classes/stream';
+import { Shape } from 'lwc-arcade';
 import { shuffled7Bag } from './sevenBagRandomizer';
-import Shape from '../../../view/model/shape';
+import Stream from './stream';
 
 export default class BlockStream extends Stream {
     constructor() {

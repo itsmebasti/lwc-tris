@@ -1,6 +1,5 @@
 import { LightningElement, api, track } from 'lwc';
-import Shape from '../../view/model/shape';
-import Grid from '../../view/model/grid';
+import { Shape, Grid } from 'lwc-arcade';
 import MultiPlayerSession from '../app/sesssion/multiPlayerSession';
 
 export default class Competitors extends LightningElement {
