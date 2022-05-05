@@ -91,6 +91,10 @@ export default class App extends LightningElement {
     
     addKeyListeners = () => {
         this.keyListener.listen({
+            'd': () => this.engine.moveX(1),
+            'a': () => this.engine.moveX(-1),
+            'w': () => this.engine.rotate(),
+            's': () => this.engine.softDrop(),
             'ArrowRight': () => this.engine.moveX(1),
             'ArrowLeft': () => this.engine.moveX(-1),
             'ArrowUp': () => this.engine.rotate(),
@@ -102,9 +106,15 @@ export default class App extends LightningElement {
     }
     
     requestStart() {
-        this.session.startBlockStream()
-            .catch(this.toast)
-            .then(this.toast);
+        Promise.resolve()
+               .then(() => {
+                   if(this.engine.running) {
+                       throw "Please retry the round is not ";
+                   }
+                   return this.session.startBlockStream();
+               })
+               .catch(this.toast)
+               .then(this.toast);
     }
     
     startRound = (blockStream) => {

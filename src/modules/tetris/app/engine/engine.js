@@ -49,7 +49,7 @@ export default class Engine extends Publisher {
         
         this.blockStream = blockStream;
         this.insertBlock();
-        this.state.playing = true
+        this.state.playing = true;
     }
     
     pauseResume() {
@@ -201,10 +201,10 @@ export default class Engine extends Publisher {
     }
     
     gameOver(x, y, block) {
-        this.state.playing = false;
-        
         this.canvas.animate([{x, y}], 1000, 11, [block.clone('grey'), block.clone(Pixel.CLEAR)])
             .then(() => {
+                this.state.playing = false;
+                this.clock.stop();
                 this.publish('gameOver');
             });
     }
