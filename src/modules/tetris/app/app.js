@@ -106,13 +106,7 @@ export default class App extends LightningElement {
     }
     
     requestStart() {
-        Promise.resolve()
-               .then(() => {
-                   if(this.engine.running) {
-                       throw "Please retry, the game is still running!";
-                   }
-                   return this.session.startBlockStream();
-               })
+        this.session.startBlockStream()
                .catch(this.toast)
                .then(this.toast);
     }
