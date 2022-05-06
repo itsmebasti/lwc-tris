@@ -109,7 +109,7 @@ export default class App extends LightningElement {
         Promise.resolve()
                .then(() => {
                    if(this.engine.running) {
-                       throw "Please retry the round is not ";
+                       throw "Please retry, the game is still running!";
                    }
                    return this.session.startBlockStream();
                })
